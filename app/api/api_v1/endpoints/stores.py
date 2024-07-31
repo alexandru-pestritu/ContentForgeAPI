@@ -11,25 +11,40 @@ from app.crud.crud_store import (
     delete_store
 )
 from app.database import get_db
+from app.models.user import User  
+from app.dependencies.auth import get_current_user  
 
 router = APIRouter()
 
 @router.post("/", response_model=StoreResponse)
-def create_new_store(store: StoreCreate, db: Session = Depends(get_db)):
+def create_new_store(
+    store: StoreCreate, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)  
+):
     """
     Create a new store.
     """
     return create_store(db=db, store=store)
 
 @router.get("/", response_model=List[StoreResponse])
-def read_stores(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+def read_stores(
+    skip: int = 0, 
+    limit: int = 10, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
     """
     Retrieve a list of stores with pagination.
     """
     return get_stores(db=db, skip=skip, limit=limit)
 
 @router.get("/{store_id}", response_model=StoreResponse)
-def read_store(store_id: int, db: Session = Depends(get_db)):
+def read_store(
+    store_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
     """
     Retrieve a store by ID.
     """
@@ -39,7 +54,12 @@ def read_store(store_id: int, db: Session = Depends(get_db)):
     return store
 
 @router.put("/{store_id}", response_model=StoreResponse)
-def update_existing_store(store_id: int, store: StoreUpdate, db: Session = Depends(get_db)):
+def update_existing_store(
+    store_id: int, 
+    store: StoreUpdate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)  
+):
     """
     Update an existing store.
     """
@@ -49,7 +69,11 @@ def update_existing_store(store_id: int, store: StoreUpdate, db: Session = Depen
     return updated_store
 
 @router.delete("/{store_id}", response_model=StoreResponse)
-def delete_existing_store(store_id: int, db: Session = Depends(get_db)):
+def delete_existing_store(
+    store_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)  
+):
     """
     Delete a store by ID.
     """
