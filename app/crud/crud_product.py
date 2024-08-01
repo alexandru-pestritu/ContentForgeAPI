@@ -2,18 +2,28 @@ from sqlalchemy.orm import Session
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from typing import List, Optional
+from app.scrapers.scraper_factory import scraper_factory
+
 
 def create_product(db: Session, product: ProductCreate) -> ProductResponse:
     """
     Create a new product record in the database.
     """
+    scraper = scraper_factory(str(product.affiliate_urls[0]))
+
+    scraped_data = scraper.scrape_product_data()
+
     new_product = Product(
         name=product.name,
         seo_keyword=product.seo_keyword,
         rating=product.rating,
+        in_stock=scraped_data.get('in_stock'),
+        description=scraped_data.get('description'),
     )
 
-    # Use set methods to store lists/dicts as JSON
+    new_product.set_specifications(scraped_data.get('specifications', {}))
+    new_product.set_image_urls(scraped_data.get('image_urls', []))
+
     new_product.set_store_ids(product.store_ids)
     new_product.set_affiliate_urls(product.affiliate_urls)
 
@@ -48,9 +58,8 @@ def update_product(
     """
     product = db.query(Product).filter(Product.id == product_id).first()
     if product:
-        update_data = product_update.model_dump(exclude_unset=True)
+        update_data = product_update.model_dump()
 
-        # Use set methods to update lists/dicts as JSON
         if 'store_ids' in update_data:
             product.set_store_ids(update_data['store_ids'])
         if 'affiliate_urls' in update_data:
@@ -66,7 +75,6 @@ def update_product(
         if 'image_ids' in update_data:
             product.set_image_ids(update_data['image_ids'])
 
-        # Direct assignments for other fields
         for key, value in update_data.items():
             if key not in ('store_ids', 'affiliate_urls', 'specifications', 'pros', 'cons', 'image_urls', 'image_ids'):
                 setattr(product, key, value)

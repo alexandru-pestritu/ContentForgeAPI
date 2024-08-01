@@ -12,8 +12,8 @@ class ProductBase(BaseModel):
 class ProductCreate(ProductBase):
     pass
 
-class ProductUpdate(BaseModel):
-    in_stock: Optional[bool]
+class ProductUpdate(ProductBase):
+    in_stock: Optional[bool] 
     description: Optional[str]
     specifications: Optional[Dict[str, str]]
     image_urls: Optional[List[HttpUrl]]
