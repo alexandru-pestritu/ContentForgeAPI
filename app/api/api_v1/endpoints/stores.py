@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form
 from sqlalchemy.orm import Session
-from typing import List
-
+from typing import List, Optional
 from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
 from app.crud.crud_store import (
     create_store, 
@@ -13,22 +12,31 @@ from app.crud.crud_store import (
 from app.database import get_db
 from app.models.user import User  
 from app.dependencies.auth import get_current_user  
+from app.services.wordpress_service import WordPressService
+from app.services.image_service import ImageService
 
 router = APIRouter()
 
 @router.post("/", response_model=StoreResponse)
-def create_new_store(
+async def create_new_store(
     store: StoreCreate, 
     db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)  
+    current_user: User = Depends(get_current_user),  
+    upload_to_wordpress: Optional[bool] = None,
+    image_file_name: Optional[str] = None,
+    alt_text: Optional[str] = None,
+    wordpress_service: WordPressService = Depends()
 ):
     """
     Create a new store.
     """
-    return create_store(db=db, store=store)
+    image_service = None
+    if upload_to_wordpress:
+        image_service = ImageService(wordpress_service)
+    return await create_store(db=db, store=store, image_service=image_service, image_file_name=image_file_name, alt_text=alt_text)
 
 @router.get("/", response_model=List[StoreResponse])
-def read_stores(
+async def read_stores(
     skip: int = 0, 
     limit: int = 10, 
     db: Session = Depends(get_db),
@@ -40,7 +48,7 @@ def read_stores(
     return get_stores(db=db, skip=skip, limit=limit)
 
 @router.get("/{store_id}", response_model=StoreResponse)
-def read_store(
+async def read_store(
     store_id: int, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) 
@@ -54,22 +62,32 @@ def read_store(
     return store
 
 @router.put("/{store_id}", response_model=StoreResponse)
-def update_existing_store(
+async def update_existing_store(
     store_id: int, 
     store: StoreUpdate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  
+    current_user: User = Depends(get_current_user),  
+    upload_to_wordpress: Optional[bool] = None,
+    image_file_name: Optional[str] = None,
+    alt_text: Optional[str] = None,
+    wordpress_service: WordPressService = Depends()
 ):
     """
     Update an existing store.
     """
-    updated_store = update_store(db=db, store_id=store_id, store_update=store)
+    image_service = None
+    if upload_to_wordpress:
+        image_service = ImageService(wordpress_service)
+    
+    updated_store = await update_store(db=db, store_id=store_id, store_update=store, image_service=image_service, image_file_name=image_file_name, alt_text=alt_text)
+    
     if not updated_store:
         raise HTTPException(status_code=404, detail="Store not found")
+    
     return updated_store
 
 @router.delete("/{store_id}", response_model=StoreResponse)
-def delete_existing_store(
+async def delete_existing_store(
     store_id: int, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)  
