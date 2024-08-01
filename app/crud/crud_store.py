@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from sqlalchemy.orm import Session
 from app.models.store import Store
 from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
@@ -7,13 +8,15 @@ def create_store(db: Session, store: StoreCreate) -> StoreResponse:
     """
     Create a new store record in the database.
     """
+    # Convert HttpUrl objects to strings
+    base_url_str = str(store.base_url)
+    domain = urlparse(base_url_str).netloc
+    favicon_url_str = f"https://www.google.com/s2/favicons?domain={domain}"
+
     store_data = store.model_dump()
-    
-    # Convert URL objects to strings
-    if 'base_url' in store_data and store_data['base_url'] is not None:
-        store_data['base_url'] = str(store_data['base_url'])
-    if 'favicon_url' in store_data and store_data['favicon_url'] is not None:
-        store_data['favicon_url'] = str(store_data['favicon_url'])
+    store_data['base_url'] = base_url_str
+    store_data['favicon_url'] = favicon_url_str
+    store_data['favicon_image_id'] = None  
 
     new_store = Store(**store_data)
     db.add(new_store)
@@ -45,7 +48,7 @@ def update_store(db: Session, store_id: int, store_update: StoreUpdate) -> Optio
     if store:
         update_data = store_update.model_dump(exclude_unset=True)
         
-        # Convert URL objects to strings
+        # Convert HttpUrl objects to strings if they are provided
         if 'base_url' in update_data and update_data['base_url'] is not None:
             update_data['base_url'] = str(update_data['base_url'])
         if 'favicon_url' in update_data and update_data['favicon_url'] is not None:
@@ -57,6 +60,7 @@ def update_store(db: Session, store_id: int, store_update: StoreUpdate) -> Optio
         db.refresh(store)
         return StoreResponse.model_validate(store)
     return None
+
 
 def delete_store(db: Session, store_id: int) -> Optional[StoreResponse]:
     """
