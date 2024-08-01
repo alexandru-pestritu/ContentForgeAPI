@@ -6,17 +6,17 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    store_ids = Column(Text, nullable=True)  
-    name = Column(String, index=True, nullable=False)
-    affiliate_urls = Column(Text, nullable=True) 
+    store_ids = Column(Text, nullable=False)  
+    name = Column(String, index=True, nullable=True)
+    affiliate_urls = Column(Text, nullable=False) 
     in_stock = Column(Boolean, nullable=True)
     description = Column(Text, nullable=True)
     specifications = Column(Text, nullable=True)
-    seo_keyword = Column(String, nullable=True)
+    seo_keyword = Column(String, nullable=False)
     pros = Column(Text, nullable=True)
     cons = Column(Text, nullable=True)
     review = Column(Text, nullable=True)
-    rating = Column(Float, nullable=True) 
+    rating = Column(Float, nullable=False) 
     image_urls = Column(Text, nullable=True)
     image_ids = Column(Text, nullable=True) 
 
@@ -32,6 +32,7 @@ class Product(Base):
 
     def set_affiliate_urls(self, affiliate_urls):
         """Accepts a list of affiliate URLs and stores them as JSON."""
+        affiliate_urls = [str(url) for url in affiliate_urls]
         self.affiliate_urls = json.dumps(affiliate_urls)
 
     def get_affiliate_urls(self):
@@ -83,6 +84,7 @@ class Product(Base):
     
     def set_image_urls(self, image_urls):
         """Accepts a list of image URLs and stores them as JSON."""
+        image_urls = [str(url) for url in image_urls]
         self.image_urls = json.dumps(image_urls)
 
     def get_image_urls(self):

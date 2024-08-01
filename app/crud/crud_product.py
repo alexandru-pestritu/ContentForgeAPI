@@ -16,20 +16,11 @@ def create_product(db: Session, product: ProductCreate) -> ProductResponse:
     # Use set methods to store lists/dicts as JSON
     new_product.set_store_ids(product.store_ids)
     new_product.set_affiliate_urls(product.affiliate_urls)
-    new_product.set_specifications(product.specifications)
-    new_product.set_pros(product.pros)
-    new_product.set_cons(product.cons)
-    new_product.set_image_urls(product.image_urls)
-    new_product.set_image_ids(product.image_ids)
-
-    # Direct assignments for other fields
-    new_product.in_stock = product.in_stock
-    new_product.description = product.description
 
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
-    return ProductResponse.model_validate(new_product)
+    return ProductResponse.from_orm(new_product)
 
 def get_product_by_id(db: Session, product_id: int) -> Optional[ProductResponse]:
     """
@@ -37,7 +28,7 @@ def get_product_by_id(db: Session, product_id: int) -> Optional[ProductResponse]
     """
     product = db.query(Product).filter(Product.id == product_id).first()
     if product:
-        return ProductResponse.model_validate(product)
+        return ProductResponse.from_orm(product)
     return None
 
 def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[ProductResponse]:
@@ -45,7 +36,7 @@ def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[ProductRes
     Retrieve a list of products, with pagination support.
     """
     products = db.query(Product).offset(skip).limit(limit).all()
-    return [ProductResponse.model_validate(product) for product in products]
+    return [ProductResponse.from_orm(product) for product in products]
 
 def update_product(
     db: Session, 
@@ -82,7 +73,7 @@ def update_product(
 
         db.commit()
         db.refresh(product)
-        return ProductResponse.model_validate(product)
+        return ProductResponse.from_orm(product)
     return None
 
 def delete_product(db: Session, product_id: int) -> Optional[ProductResponse]:
@@ -93,5 +84,5 @@ def delete_product(db: Session, product_id: int) -> Optional[ProductResponse]:
     if product:
         db.delete(product)
         db.commit()
-        return ProductResponse.model_validate(product)
+        return ProductResponse.from_orm(product)
     return None
