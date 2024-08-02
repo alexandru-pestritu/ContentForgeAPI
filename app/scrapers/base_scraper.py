@@ -13,6 +13,10 @@ class BaseScraper(ABC):
         self.product_url = product_url
 
     @abstractmethod
+    def get_full_name(self) -> str:
+        pass
+
+    @abstractmethod
     def get_in_stock(self) -> bool:
         pass
 
@@ -37,6 +41,7 @@ class BaseScraper(ABC):
             "description": self.get_description(),
             "specifications": self.get_specifications(),
             "image_urls": self.get_image_urls(),
+            "full_name": self.get_full_name(),
         }
 
     def _fetch_page_content(self) -> BeautifulSoup:

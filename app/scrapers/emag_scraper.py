@@ -6,6 +6,15 @@ class EmagScraper(BaseScraper):
         super().__init__(product_url)
         self.page_content = self._fetch_page_content() 
 
+    def get_full_name(self) -> str:
+        """
+        Extract and return the full product name from the page content.
+        """
+        full_name_element = self.page_content.find('h1', class_='page-title')
+        if full_name_element:
+            return full_name_element.get_text(strip=True)
+        return ""
+
     def get_in_stock(self) -> bool:
         """
         Extract and return whether the product is in stock from the page content.
