@@ -3,14 +3,15 @@ from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from typing import List, Optional
 from app.scrapers.scraper_factory import scraper_factory
+from app.services.image_metadata_service import ImageMetadataService
+from app.services.image_service import ImageService
 
 
-def create_product(db: Session, product: ProductCreate) -> ProductResponse:
+async def create_product(db: Session, product: ProductCreate, image_service: Optional[ImageService] = None) -> ProductResponse:
     """
     Create a new product record in the database.
     """
     scraper = scraper_factory(str(product.affiliate_urls[0]))
-
     scraped_data = scraper.scrape_product_data()
 
     new_product = Product(
@@ -24,9 +25,20 @@ def create_product(db: Session, product: ProductCreate) -> ProductResponse:
 
     new_product.set_specifications(scraped_data.get('specifications', {}))
     new_product.set_image_urls(scraped_data.get('image_urls', []))
-
     new_product.set_store_ids(product.store_ids)
     new_product.set_affiliate_urls(product.affiliate_urls)
+
+    if image_service:
+        image_metadata_service = ImageMetadataService()
+        image_ids = []
+        for index, image_url in enumerate(new_product.get_image_urls()):
+            image_filename, alt_text = image_metadata_service.generate_product_metadata(new_product.name, new_product.seo_keyword, new_product.full_name, index + 1)
+            image_path = await image_service.download_image(image_url)
+            processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
+            image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
+            image_ids.append(image_id)
+
+        new_product.set_image_ids(image_ids)
 
     db.add(new_product)
     db.commit()
@@ -49,11 +61,7 @@ def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[ProductRes
     products = db.query(Product).offset(skip).limit(limit).all()
     return [ProductResponse.from_orm(product) for product in products]
 
-def update_product(
-    db: Session, 
-    product_id: int, 
-    product_update: ProductUpdate
-) -> Optional[ProductResponse]:
+async def update_product(db: Session, product_id: int, product_update: ProductUpdate, image_service: Optional[ImageService] = None) -> Optional[ProductResponse]:
     """
     Update an existing product record.
     """
@@ -75,6 +83,18 @@ def update_product(
             product.set_image_urls(update_data['image_urls'])
         if 'image_ids' in update_data:
             product.set_image_ids(update_data['image_ids'])
+
+        if image_service:
+            image_metadata_service = ImageMetadataService()
+            image_ids = []
+            for index, image_url in enumerate(product.get_image_urls()):
+                image_filename, alt_text = image_metadata_service.generate_product_metadata(product.name, product.seo_keyword, product.full_name, index + 1)
+                image_path = await image_service.download_image(image_url)
+                processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
+                image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
+                image_ids.append(image_id)
+
+            product.set_image_ids(image_ids)
 
         for key, value in update_data.items():
             if key not in ('store_ids', 'affiliate_urls', 'specifications', 'pros', 'cons', 'image_urls', 'image_ids'):

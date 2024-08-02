@@ -12,19 +12,27 @@ from app.crud.crud_product import (
 from app.database import get_db
 from app.models.user import User  
 from app.dependencies.auth import get_current_user  
+from app.services.wordpress_service import WordPressService
+from app.services.image_service import ImageService
 
 router = APIRouter()
 
 @router.post("/", response_model=ProductResponse)
-def create_new_product(
+async def create_new_product(
     product: ProductCreate, 
     db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)  
+    current_user: User = Depends(get_current_user),
+    upload_to_wordpress: Optional[bool] = None,
+    wordpress_service: WordPressService = Depends()
 ):
     """
     Create a new product.
     """
-    return create_product(db=db, product=product)
+    image_service = None
+    if upload_to_wordpress:
+        image_service = ImageService(wordpress_service)
+    
+    return await create_product(db=db, product=product, image_service=image_service)
 
 @router.get("/", response_model=List[ProductResponse])
 async def read_products(
@@ -39,7 +47,7 @@ async def read_products(
     return get_products(db=db, skip=skip, limit=limit)
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def read_product(
+async def read_product(
     product_id: int, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) 
@@ -53,16 +61,22 @@ def read_product(
     return product
 
 @router.put("/{product_id}", response_model=ProductResponse)
-def update_existing_product(
+async def update_existing_product(
     product_id: int, 
     product: ProductUpdate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  
+    current_user: User = Depends(get_current_user),
+    upload_to_wordpress: Optional[bool] = None,
+    wordpress_service: WordPressService = Depends()
 ):
     """
     Update an existing product.
     """
-    updated_product = update_product(db=db, product_id=product_id, product_update=product)
+    image_service = None
+    if upload_to_wordpress:
+        image_service = ImageService(wordpress_service)
+
+    updated_product = await update_product(db=db, product_id=product_id, product_update=product, image_service=image_service)
     
     if not updated_product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -70,7 +84,7 @@ def update_existing_product(
     return updated_product
 
 @router.delete("/{product_id}", response_model=ProductResponse)
-def delete_existing_product(
+async def delete_existing_product(
     product_id: int, 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)  
