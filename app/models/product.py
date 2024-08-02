@@ -8,6 +8,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True, index=True)
     store_ids = Column(Text, nullable=False)  
     name = Column(String, index=True, nullable=True)
+    full_name = Column(String, nullable=True)
     affiliate_urls = Column(Text, nullable=False) 
     in_stock = Column(Boolean, nullable=True)
     description = Column(Text, nullable=True)

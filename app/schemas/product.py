@@ -14,6 +14,7 @@ class ProductCreate(ProductBase):
 
 class ProductUpdate(ProductBase):
     in_stock: Optional[bool] 
+    full_name : Optional[str]
     description: Optional[str]
     specifications: Optional[Dict[str, str]]
     image_urls: Optional[List[HttpUrl]]
@@ -25,6 +26,7 @@ class ProductUpdate(ProductBase):
 class ProductResponse(ProductBase):
     id: int
     in_stock: Optional[bool] = None
+    full_name: Optional[str] = None
     description: Optional[str] = None
     specifications: Optional[Dict[str, str]] = None
     image_urls: Optional[List[HttpUrl]] = None
@@ -38,6 +40,7 @@ class ProductResponse(ProductBase):
         return cls(
             id=product.id,
             name=product.name,
+            full_name=product.full_name,
             store_ids=product.get_store_ids(),
             affiliate_urls=product.get_affiliate_urls(),
             seo_keyword=product.seo_keyword,
