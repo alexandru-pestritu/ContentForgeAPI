@@ -5,7 +5,7 @@ from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
 from typing import List, Optional
 from app.services.image_service import ImageService
 
-async def create_store(db: Session, store: StoreCreate, image_service: Optional[ImageService] = None, image_file_name: Optional[str] = None, alt_text: Optional[str] = None) -> StoreResponse:
+async def create_store(db: Session, store: StoreCreate, image_service: Optional[ImageService] = None) -> StoreResponse:
     """
     Create a new store record in the database.
     """
@@ -19,11 +19,8 @@ async def create_store(db: Session, store: StoreCreate, image_service: Optional[
     store_data['favicon_url'] = f"https://www.google.com/s2/favicons?domain={domain}"
 
     # If image upload is requested, handle the image upload
-    if image_service and image_file_name:
-        image_path = await image_service.download_image(store_data['favicon_url'])
-        processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_file_name, alt_text=alt_text)
-        image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_file_name, alt_text)
-        store_data['favicon_image_id'] = image_id
+    if image_service:
+        store_data['favicon_image_id'] = await image_service.process_store_image(store_data['name'], store_data['favicon_url'])
 
     new_store = Store(**store_data)
     db.add(new_store)
@@ -47,7 +44,7 @@ def get_stores(db: Session, skip: int = 0, limit: int = 10) -> List[StoreRespons
     stores = db.query(Store).offset(skip).limit(limit).all()
     return [StoreResponse.model_validate(store) for store in stores]
 
-async def update_store(db: Session, store_id: int, store_update: StoreUpdate, image_service: Optional[ImageService] = None, image_file_name: Optional[str] = None, alt_text: Optional[str] = None) -> Optional[StoreResponse]:
+async def update_store(db: Session, store_id: int, store_update: StoreUpdate, image_service: Optional[ImageService] = None) -> Optional[StoreResponse]:
     """
     Update an existing store record.
     """
@@ -64,11 +61,8 @@ async def update_store(db: Session, store_id: int, store_update: StoreUpdate, im
             update_data['favicon_url'] = f"https://www.google.com/s2/favicons?domain={domain}"
 
         # Handle image upload if requested
-        if image_service and image_file_name:
-            image_path = await image_service.download_image(update_data['favicon_url'])
-            processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_file_name, alt_text=alt_text)
-            image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_file_name, alt_text)
-            update_data['favicon_image_id'] = image_id
+        if image_service:
+            update_data['favicon_image_id'] = await image_service.process_store_image(update_data['name'], update_data['favicon_url'])
 
         for key, value in update_data.items():
             setattr(store, key, value)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
@@ -23,17 +23,13 @@ async def create_new_store(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user),  
     upload_to_wordpress: Optional[bool] = None,
-    image_file_name: Optional[str] = None,
-    alt_text: Optional[str] = None,
     wordpress_service: WordPressService = Depends()
 ):
     """
     Create a new store.
     """
-    image_service = None
-    if upload_to_wordpress:
-        image_service = ImageService(wordpress_service)
-    return await create_store(db=db, store=store, image_service=image_service, image_file_name=image_file_name, alt_text=alt_text)
+    image_service = ImageService(wordpress_service) if upload_to_wordpress else None
+    return await create_store(db=db, store=store, image_service=image_service)
 
 @router.get("/", response_model=List[StoreResponse])
 async def read_stores(
@@ -68,18 +64,14 @@ async def update_existing_store(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),  
     upload_to_wordpress: Optional[bool] = None,
-    image_file_name: Optional[str] = None,
-    alt_text: Optional[str] = None,
     wordpress_service: WordPressService = Depends()
 ):
     """
     Update an existing store.
     """
-    image_service = None
-    if upload_to_wordpress:
-        image_service = ImageService(wordpress_service)
+    image_service = ImageService(wordpress_service) if upload_to_wordpress else None
     
-    updated_store = await update_store(db=db, store_id=store_id, store_update=store, image_service=image_service, image_file_name=image_file_name, alt_text=alt_text)
+    updated_store = await update_store(db=db, store_id=store_id, store_update=store, image_service=image_service)
     
     if not updated_store:
         raise HTTPException(status_code=404, detail="Store not found")
