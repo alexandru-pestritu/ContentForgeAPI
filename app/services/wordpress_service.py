@@ -3,6 +3,7 @@ import httpx
 import base64
 from dotenv import load_dotenv
 from typing import Optional
+import mimetypes
 
 load_dotenv()
 
@@ -31,8 +32,12 @@ class WordPressService:
             'Content-Disposition': f'attachment; filename={file_name}',
         }
 
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type:
+            mime_type = 'application/octet-stream'
+        
         with open(image_path, 'rb') as file:
-            files = {'file': (file_name, file, 'image/png')}
+            files = {'file': (file_name, file, mime_type)}
             async with httpx.AsyncClient() as client:
                 response = await client.post(url, headers=headers, files=files, timeout=60.0)
                 response.raise_for_status()
