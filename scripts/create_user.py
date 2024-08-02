@@ -1,4 +1,3 @@
-# scripts/add_user.py
 from app.database import SessionLocal
 from app.models.user import User
 from app.core.security import get_password_hash

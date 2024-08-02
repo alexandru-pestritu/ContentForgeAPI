@@ -19,6 +19,7 @@ def create_product(db: Session, product: ProductCreate) -> ProductResponse:
         rating=product.rating,
         in_stock=scraped_data.get('in_stock'),
         description=scraped_data.get('description'),
+        full_name=scraped_data.get('full_name'),
     )
 
     new_product.set_specifications(scraped_data.get('specifications', {}))

@@ -5,6 +5,9 @@ product_url = "valid product url from eMAG"
 
 scraper = scraper_factory(product_url)
 
+full_name = scraper.get_full_name()
+print(f"Full Name: {full_name}")
+
 in_stock = scraper.get_in_stock()
 print(f"In Stock: {in_stock}")
 
