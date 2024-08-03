@@ -7,18 +7,31 @@ class Article(Base):
     __tablename__ = "articles"
 
     id = Column(Integer, primary_key=True, index=True)
+    wp_id = Column(Integer, nullable=True)
+    categories_id_list = Column(Text, nullable=True)
     title = Column(String, nullable=False)
-    seo_keywords = Column(Text, nullable=True)  
     slug = Column(String, unique=True, nullable=False)
+    author_id = Column(Integer, nullable=True)
+    status = Column(String, nullable=True, default='draft') 
+    content = Column(Text, nullable=True)
+
+    seo_keywords = Column(Text, nullable=True)  
+    meta_title = Column(String, nullable=True)
+    meta_description = Column(String, nullable=True)
+
     main_image_url = Column(String, nullable=True)
     main_image_wp_id = Column(Integer, nullable=True)  
+
     buyers_guide_image_url = Column(String, nullable=True)
     buyers_guide_image_wp_id = Column(Integer, nullable=True)  
+
     products_id_list = Column(Text, nullable=True)  
     introduction = Column(Text, nullable=True)
     buyers_guide = Column(Text, nullable=True)
     faqs = Column(Text, nullable=True)  
     conclusion = Column(Text, nullable=True)
+
+    
 
     def set_seo_keywords(self, keywords):
         """Accepts a list of SEO keywords and stores them as JSON."""
@@ -48,4 +61,14 @@ class Article(Base):
         """Returns the list of FAQs stored as JSON."""
         if self.faqs:
             return json.loads(self.faqs)
+        return []
+
+    def set_categories_id_list(self, category_ids):
+        """Accepts a list of category IDs and stores them as JSON."""
+        self.categories_id_list = json.dumps(category_ids)
+
+    def get_categories_id_list(self):
+        """Returns the list of category IDs stored as JSON."""
+        if self.categories_id_list:
+            return json.loads(self.categories_id_list)
         return []
