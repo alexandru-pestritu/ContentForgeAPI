@@ -1,9 +1,11 @@
 from pathlib import Path
 from typing import Optional
+import uuid
 import httpx
 from app.services.wordpress_service import WordPressService
 from app.services.image_metadata_service import ImageMetadataService
 import mimetypes
+from PIL import Image
 
 class ImageService:
     def __init__(self, wordpress_service: WordPressService):
@@ -24,7 +26,8 @@ class ImageService:
             extension = mimetypes.guess_extension(content_type)
             if not extension:
                extension = ".jpg"  
-            temp_image_path = self.image_dir / f"temp_image{extension}"
+            temp_filename = f"{uuid.uuid4()}{extension}"
+            temp_image_path = self.image_dir / temp_filename
             with open(temp_image_path, 'wb') as image_file:
                 image_file.write(response.content)
 
@@ -87,6 +90,60 @@ class ImageService:
 
         return image_ids
 
+    def resize_image(self, image_path: Path, target_width: int, target_height: int) -> Path:
+        """
+        Resize the image to the specified dimensions while maintaining aspect ratio.
+        If the image is smaller than the target size, it will be centered.
+        """
+        with Image.open(image_path) as img:
+            img.thumbnail((target_width, target_height), Image.ANTIALIAS)
+            new_image = Image.new("RGB", (target_width, target_height), (255, 255, 255))
+            new_image.paste(img, ((target_width - img.size[0]) // 2, (target_height - img.size[1]) // 2))
+
+            resized_image_path = image_path.parent / f"resized_{image_path.name}"
+            new_image.save(resized_image_path)
+
+        return resized_image_path
+
+    async def upload_resized_image_to_wordpress(self, image_url: str, file_name: str, alt_text: str, target_width: int, target_height: int) -> Optional[int]:
+        """
+        Download, resize, and upload an image to WordPress.
+        """
+        try:
+            image_path = await self.download_image(image_url)
+            resized_image_path = self.resize_image(image_path, target_width, target_height)
+            image_id = await self.wordpress_service.upload_image(str(resized_image_path), file_name, alt_text=alt_text)
+            return image_id
+        
+        except Exception as e:
+            print(f"Error processing and uploading image: {e}")
+            return None
+        finally:
+            self.cleanup_local_images()
+
+    async def process_featured_image(self, article_title: str, seo_keywords: list, image_url: str, target_width: int, target_height: int) -> Optional[int]:
+        """
+        Download, process, and upload the featured image for an article to WordPress.
+        """
+        try:
+            image_filename, alt_text = self.metadata_service.generate_featured_image_metadata(article_title, seo_keywords)
+            image_id = await self.upload_resized_image_to_wordpress(image_url, f"{image_filename}.jpg", alt_text, target_width, target_height)
+            return image_id
+        except Exception as e:
+            print(f"Error processing featured image: {e}")
+            return None
+
+    async def process_buyers_guide_image(self, article_title: str, seo_keywords: list, image_url: str, target_width: int, target_height: int) -> Optional[int]:
+        """
+        Download, process, and upload the buyers guide image for an article to WordPress.
+        """
+        try:
+            image_filename, alt_text = self.metadata_service.generate_buyers_guide_image_metadata(article_title, seo_keywords)
+            image_id = await self.upload_resized_image_to_wordpress(image_url, f"{image_filename}.jpg", alt_text, target_width, target_height)
+            return image_id
+        except Exception as e:
+            print(f"Error processing buyers guide image: {e}")
+            return None
 
     def cleanup_local_images(self):
         """
