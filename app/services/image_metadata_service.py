@@ -22,3 +22,22 @@ class ImageMetadataService:
         alt_text = full_name
 
         return image_filename, alt_text
+
+    def generate_featured_image_metadata(self, article_title: str, seo_keywords: list) -> Tuple[str, str]:
+        """
+        Generate a filename and alt text for the featured image of an article.
+        """
+        image_filename = article_title.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
+        alt_text = " ".join(seo_keywords).replace(' ', '-').replace(',', '-').replace('.', '-')
+
+        return image_filename, alt_text
+
+    def generate_buyers_guide_image_metadata(self, article_title: str, seo_keywords: list) -> Tuple[str, str]:
+        """
+        Generate a filename and alt text for the buyers guide image of an article.
+        """
+        image_filename = f"cum aleg {seo_keywords[0]} ghidul cumparatorului".replace(' ', '-').replace(',', '-').replace('.', '-')
+
+        alt_text = f"ghidul cumparatorului pentru {seo_keywords[0]} cum alegi {seo_keywords[1]}".replace(' ', '-').replace(',', '-').replace('.', '-')
+
+        return image_filename, alt_text
