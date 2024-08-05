@@ -10,7 +10,7 @@ class Article(Base):
     wp_id = Column(Integer, nullable=True)
     categories_id_list = Column(Text, nullable=True)
     title = Column(String, nullable=False)
-    slug = Column(String, unique=True, nullable=False)
+    slug = Column(String, nullable=False)
     author_id = Column(Integer, nullable=True)
     status = Column(String, nullable=True, default='draft') 
     content = Column(Text, nullable=True)
@@ -61,7 +61,7 @@ class Article(Base):
         """Returns the list of FAQs stored as JSON."""
         if self.faqs:
             return json.loads(self.faqs)
-        return []
+        return [{}]
 
     def set_categories_id_list(self, category_ids):
         """Accepts a list of category IDs and stores them as JSON."""

@@ -7,7 +7,11 @@ from app.services.image_metadata_service import ImageMetadataService
 from app.services.image_service import ImageService
 
 
-async def create_product(db: Session, product: ProductCreate, image_service: Optional[ImageService] = None) -> ProductResponse:
+async def create_product(
+    db: Session, 
+    product: ProductCreate, 
+    image_service: Optional[ImageService] = None
+    ) -> ProductResponse:
     """
     Create a new product record in the database.
     """
@@ -45,7 +49,10 @@ async def create_product(db: Session, product: ProductCreate, image_service: Opt
     db.refresh(new_product)
     return ProductResponse.from_orm(new_product)
 
-def get_product_by_id(db: Session, product_id: int) -> Optional[ProductResponse]:
+def get_product_by_id(
+    db: Session, 
+    product_id: int
+    ) -> Optional[ProductResponse]:
     """
     Retrieve a product by its ID.
     """
@@ -54,14 +61,23 @@ def get_product_by_id(db: Session, product_id: int) -> Optional[ProductResponse]
         return ProductResponse.from_orm(product)
     return None
 
-def get_products(db: Session, skip: int = 0, limit: int = 10) -> List[ProductResponse]:
+def get_products(
+    db: Session, 
+    skip: int = 0, 
+    limit: int = 10
+    ) -> List[ProductResponse]:
     """
     Retrieve a list of products, with pagination support.
     """
     products = db.query(Product).offset(skip).limit(limit).all()
     return [ProductResponse.from_orm(product) for product in products]
 
-async def update_product(db: Session, product_id: int, product_update: ProductUpdate, image_service: Optional[ImageService] = None) -> Optional[ProductResponse]:
+async def update_product(
+    db: Session, 
+    product_id: int, 
+    product_update: ProductUpdate, 
+    image_service: Optional[ImageService] = None
+    ) -> Optional[ProductResponse]:
     """
     Update an existing product record.
     """
@@ -105,7 +121,10 @@ async def update_product(db: Session, product_id: int, product_update: ProductUp
         return ProductResponse.from_orm(product)
     return None
 
-def delete_product(db: Session, product_id: int) -> Optional[ProductResponse]:
+def delete_product(
+    db: Session, 
+    product_id: int
+    ) -> Optional[ProductResponse]:
     """
     Delete a product by its ID.
     """

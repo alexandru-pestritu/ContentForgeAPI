@@ -1,4 +1,3 @@
-# app/core/jwt.py
 from datetime import datetime, timedelta,timezone
 import os
 from typing import Optional

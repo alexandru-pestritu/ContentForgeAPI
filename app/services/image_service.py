@@ -93,15 +93,30 @@ class ImageService:
     def resize_image(self, image_path: Path, target_width: int, target_height: int) -> Path:
         """
         Resize the image to the specified dimensions while maintaining aspect ratio.
-        If the image is smaller than the target size, it will be centered.
+        The image will be scaled to fill the target dimensions completely, and any excess will be cropped.
         """
         with Image.open(image_path) as img:
-            img.thumbnail((target_width, target_height), Image.ANTIALIAS)
-            new_image = Image.new("RGB", (target_width, target_height), (255, 255, 255))
-            new_image.paste(img, ((target_width - img.size[0]) // 2, (target_height - img.size[1]) // 2))
+            original_ratio = img.width / img.height
+            target_ratio = target_width / target_height
+
+            if original_ratio > target_ratio:
+                new_height = target_height
+                new_width = int(target_height * original_ratio)
+            else:
+                new_width = target_width
+                new_height = int(target_width / original_ratio)
+
+            img = img.resize((new_width, new_height), Image.LANCZOS)
+
+            left = (new_width - target_width) / 2
+            top = (new_height - target_height) / 2
+            right = left + target_width
+            bottom = top + target_height
+
+            img = img.crop((left, top, right, bottom))
 
             resized_image_path = image_path.parent / f"resized_{image_path.name}"
-            new_image.save(resized_image_path)
+            img.save(resized_image_path)
 
         return resized_image_path
 

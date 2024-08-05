@@ -28,7 +28,11 @@ class ImageMetadataService:
         Generate a filename and alt text for the featured image of an article.
         """
         image_filename = article_title.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
-        alt_text = " ".join(seo_keywords).replace(' ', '-').replace(',', '-').replace('.', '-')
+
+        if len(seo_keywords) >= 1:
+            alt_text = " ".join(seo_keywords)
+        else:
+            alt_text = article_title
 
         return image_filename, alt_text
 
@@ -36,8 +40,15 @@ class ImageMetadataService:
         """
         Generate a filename and alt text for the buyers guide image of an article.
         """
-        image_filename = f"cum aleg {seo_keywords[0]} ghidul cumparatorului".replace(' ', '-').replace(',', '-').replace('.', '-')
 
-        alt_text = f"ghidul cumparatorului pentru {seo_keywords[0]} cum alegi {seo_keywords[1]}".replace(' ', '-').replace(',', '-').replace('.', '-')
+        if(seo_keywords[0]):
+            image_filename = f"cum aleg {seo_keywords[0]} ghidul cumparatorului".replace(' ', '-').replace(',', '-').replace('.', '-')
+        else:
+            image_filename = article_title.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
+
+        if len(seo_keywords) >= 2:
+            alt_text = f"ghidul cumparatorului pentru {seo_keywords[0]} cum alegi {seo_keywords[1]}"
+        else:
+            alt_text = article_title
 
         return image_filename, alt_text
