@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from app.crud.crud_product import (
     create_product, 
@@ -34,7 +34,7 @@ async def create_new_product(
     
     return await create_product(db=db, product=product, image_service=image_service)
 
-@router.get("/", response_model=List[ProductResponse])
+@router.get("/", response_model=Dict[str, Any])
 async def read_products(
     skip: int = 0, 
     limit: int = 10, 
@@ -44,7 +44,8 @@ async def read_products(
     """
     Retrieve a list of products with pagination.
     """
-    return get_products(db=db, skip=skip, limit=limit)
+    result = get_products(db=db, skip=skip, limit=limit)
+    return result
 
 @router.get("/{product_id}", response_model=ProductResponse)
 async def read_product(

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from app.schemas.article import ArticleCreate, ArticleUpdate, ArticleResponse
 from app.crud.crud_article import (
     create_article, 
@@ -34,7 +34,7 @@ async def create_new_article(
     
     return await create_article(db=db, article=article, image_service=image_service)
 
-@router.get("/", response_model=List[ArticleResponse])
+@router.get("/", response_model=Dict[str, Any])
 async def read_articles(
     skip: int = 0, 
     limit: int = 10, 
@@ -44,7 +44,8 @@ async def read_articles(
     """
     Retrieve a list of articles with pagination.
     """
-    return get_articles(db=db, skip=skip, limit=limit)
+    result = get_articles(db=db, skip=skip, limit=limit)
+    return result
 
 @router.get("/{article_id}", response_model=ArticleResponse)
 async def read_article(

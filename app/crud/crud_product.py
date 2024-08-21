@@ -65,12 +65,16 @@ def get_products(
     db: Session, 
     skip: int = 0, 
     limit: int = 10
-    ) -> List[ProductResponse]:
+    ) -> dict:
     """
     Retrieve a list of products, with pagination support.
     """
+    total_records = db.query(Product).count()
     products = db.query(Product).offset(skip).limit(limit).all()
-    return [ProductResponse.from_orm(product) for product in products]
+    return {
+        "products": [ProductResponse.from_orm(product) for product in products],
+        "total_records": total_records
+    }
 
 async def update_product(
     db: Session, 

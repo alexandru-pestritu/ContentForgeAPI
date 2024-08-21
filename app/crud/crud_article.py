@@ -71,12 +71,16 @@ def get_articles(
     db: Session, 
     skip: int = 0, 
     limit: int = 10
-    ) -> List[ArticleResponse]:
+    ) -> dict:
     """
     Retrieve a list of articles, with pagination support.
     """
+    total_records = db.query(Article).count()
     articles = db.query(Article).offset(skip).limit(limit).all()
-    return [ArticleResponse.from_orm(article) for article in articles]
+    return {
+        "articles": [ArticleResponse.from_orm(article) for article in articles],
+        "total_records": total_records
+    }
 
 async def update_article(
     db: Session, 

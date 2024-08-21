@@ -49,7 +49,9 @@ class Product(Base):
     def get_image_ids(self):
         """Returns the list of image IDs stored as JSON."""
         if self.image_ids:
-            return json.loads(self.image_ids)
+            image_ids = json.loads(self.image_ids)
+            if all(isinstance(image_id, int) for image_id in image_ids):
+                return image_ids
         return []
 
     def set_specifications(self, specifications):
