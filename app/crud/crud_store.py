@@ -45,12 +45,16 @@ def get_stores(
     db: Session, 
     skip: int = 0, 
     limit: int = 10
-    ) -> List[StoreResponse]:
+) -> dict:
     """
-    Retrieve a list of stores, with pagination support.
+    Retrieve a list of stores, with pagination support and total records.
     """
+    total_records = db.query(Store).count()
     stores = db.query(Store).offset(skip).limit(limit).all()
-    return [StoreResponse.model_validate(store) for store in stores]
+    return {
+        "stores": [StoreResponse.model_validate(store) for store in stores],
+        "total_records": total_records
+    }
 
 async def update_store(
     db: Session, 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
 from app.crud.crud_store import (
     create_store, 
@@ -31,7 +31,7 @@ async def create_new_store(
     image_service = ImageService(wordpress_service) if upload_to_wordpress else None
     return await create_store(db=db, store=store, image_service=image_service)
 
-@router.get("/", response_model=List[StoreResponse])
+@router.get("/", response_model=Dict[str, Any])
 async def read_stores(
     skip: int = 0, 
     limit: int = 10, 
@@ -39,9 +39,10 @@ async def read_stores(
     current_user: User = Depends(get_current_user) 
 ):
     """
-    Retrieve a list of stores with pagination.
+    Retrieve a list of stores with pagination and total records.
     """
-    return get_stores(db=db, skip=skip, limit=limit)
+    result = get_stores(db=db, skip=skip, limit=limit)
+    return result
 
 @router.get("/{store_id}", response_model=StoreResponse)
 async def read_store(
