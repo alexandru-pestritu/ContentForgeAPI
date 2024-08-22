@@ -38,14 +38,18 @@ async def create_new_product(
 async def read_products(
     skip: int = 0, 
     limit: int = 10, 
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) 
+    current_user: User = Depends(get_current_user)
 ):
     """
-    Retrieve a list of products with pagination.
+    Retrieve a list of products with pagination, sorting, filtering, and total records.
     """
-    result = get_products(db=db, skip=skip, limit=limit)
+    result = get_products(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     return result
+
 
 @router.get("/{product_id}", response_model=ProductResponse)
 async def read_product(

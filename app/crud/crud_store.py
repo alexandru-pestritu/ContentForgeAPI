@@ -44,17 +44,38 @@ def get_store_by_id(
 def get_stores(
     db: Session, 
     skip: int = 0, 
-    limit: int = 10
+    limit: int = 10, 
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None
 ) -> dict:
     """
-    Retrieve a list of stores, with pagination support and total records.
+    Retrieve a list of stores, with pagination support, sorting, filtering, and total records.
     """
-    total_records = db.query(Store).count()
-    stores = db.query(Store).offset(skip).limit(limit).all()
+    query = db.query(Store)
+
+    if filter:
+        filter_pattern = f"%{filter}%"
+        query = query.filter(
+            Store.name.ilike(filter_pattern) |
+            Store.base_url.ilike(filter_pattern) |
+            Store.favicon_image_id.ilike(filter_pattern)
+        )
+
+    if sort_field:
+        if sort_order == -1:
+            query = query.order_by(getattr(Store, sort_field).desc())
+        else:
+            query = query.order_by(getattr(Store, sort_field).asc())
+
+    total_records = query.count()
+    stores = query.offset(skip).limit(limit).all()
+
     return {
         "stores": [StoreResponse.model_validate(store) for store in stores],
         "total_records": total_records
     }
+
 
 async def update_store(
     db: Session, 

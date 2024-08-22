@@ -64,17 +64,37 @@ def get_product_by_id(
 def get_products(
     db: Session, 
     skip: int = 0, 
-    limit: int = 10
-    ) -> dict:
+    limit: int = 10, 
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None
+) -> dict:
     """
-    Retrieve a list of products, with pagination support.
+    Retrieve a list of products, with pagination support, sorting, filtering, and total records.
     """
-    total_records = db.query(Product).count()
-    products = db.query(Product).offset(skip).limit(limit).all()
+    query = db.query(Product)
+
+    if filter:
+        filter_pattern = f"%{filter}%"
+        query = query.filter(
+            Product.name.ilike(filter_pattern) |
+            Product.description.ilike(filter_pattern)
+        )
+
+    if sort_field:
+        if sort_order == -1:
+            query = query.order_by(getattr(Product, sort_field).desc())
+        else:
+            query = query.order_by(getattr(Product, sort_field).asc())
+
+    total_records = query.count()
+    products = query.offset(skip).limit(limit).all()
+
     return {
         "products": [ProductResponse.from_orm(product) for product in products],
         "total_records": total_records
     }
+
 
 async def update_product(
     db: Session, 

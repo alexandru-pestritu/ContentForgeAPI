@@ -38,14 +38,18 @@ async def create_new_article(
 async def read_articles(
     skip: int = 0, 
     limit: int = 10, 
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) 
+    current_user: User = Depends(get_current_user)
 ):
     """
-    Retrieve a list of articles with pagination.
+    Retrieve a list of articles with pagination, sorting, filtering, and total records.
     """
-    result = get_articles(db=db, skip=skip, limit=limit)
+    result = get_articles(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     return result
+
 
 @router.get("/{article_id}", response_model=ArticleResponse)
 async def read_article(

@@ -70,17 +70,38 @@ def get_article_by_id(
 def get_articles(
     db: Session, 
     skip: int = 0, 
-    limit: int = 10
-    ) -> dict:
+    limit: int = 10, 
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None
+) -> dict:
     """
-    Retrieve a list of articles, with pagination support.
+    Retrieve a list of articles, with pagination support, sorting, filtering, and total records.
     """
-    total_records = db.query(Article).count()
-    articles = db.query(Article).offset(skip).limit(limit).all()
+    query = db.query(Article)
+
+    if filter:
+        filter_pattern = f"%{filter}%"
+        query = query.filter(
+            Article.title.ilike(filter_pattern) |
+            Article.slug.ilike(filter_pattern) |
+            Article.meta_title.ilike(filter_pattern)
+        )
+
+    if sort_field:
+        if sort_order == -1:
+            query = query.order_by(getattr(Article, sort_field).desc())
+        else:
+            query = query.order_by(getattr(Article, sort_field).asc())
+
+    total_records = query.count()
+    articles = query.offset(skip).limit(limit).all()
+
     return {
         "articles": [ArticleResponse.from_orm(article) for article in articles],
         "total_records": total_records
     }
+
 
 async def update_article(
     db: Session, 
