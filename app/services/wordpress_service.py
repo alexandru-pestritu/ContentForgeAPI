@@ -80,3 +80,31 @@ class WordPressService:
             response = await client.get(url, headers=headers)
             response.raise_for_status()
             return response.json()
+        
+    async def get_users(self) -> list:
+        """
+        Retrieve a list of users from WordPress.
+        """
+        url = f"{self.base_url}/users"
+        headers = {
+            'Authorization': f'Basic {self.token}',
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
+
+    async def get_categories(self) -> list:
+        """
+        Retrieve a list of categories from WordPress.
+        """
+        url = f"{self.base_url}/categories"
+        headers = {
+            'Authorization': f'Basic {self.token}',
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
