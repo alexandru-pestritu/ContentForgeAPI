@@ -73,8 +73,8 @@ def get_prompt_types_subtypes() -> Dict[str, List[str]]:
     Return the available types and subtypes for prompts.
     """
     return {
-        "product": ["review", "proscons"],
-        "article": ["introduction", "buyers_guide", "faqs", "conclusion"]
+        "Product": ["Review", "Pros & Cons"],
+        "Article": ["Introduction", "Buyer's Guide", "FAQs", "Conclusion"]
     }
 
 
@@ -83,12 +83,12 @@ def get_placeholders_for_type(type: str) -> List[str]:
     Return available placeholders for a given type (product or article).
     """
     placeholders = {
-        "product": [
+        "Product": [
             "{name}", "{full_name}", "{affiliate_urls}", "{description}",
             "{specifications}", "{seo_keyword}", "{pros}", "{cons}", "{review}", "{rating}",
             "{image_urls}"
         ],
-        "article": [
+        "Article": [
             "{title}", "{slug}", "{content}", "{seo_keywords}", "{meta_title}", "{meta_description}", 
             "{main_image_url}", "{buyers_guide_image_url}", "{products_id_list}", 
             "{introduction}", "{buyers_guide}", "{faqs}", "{conclusion}"
