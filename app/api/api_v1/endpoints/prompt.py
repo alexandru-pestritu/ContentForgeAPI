@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
-from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse, PromptTypeSubtypeResponse
+from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse
+from app.schemas.prompt_type_subtype_response import PromptTypeSubtypeResponse
 from app.crud.crud_prompt import (
     create_prompt, 
     get_prompt_by_id, 

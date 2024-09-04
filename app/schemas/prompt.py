@@ -19,8 +19,5 @@ class PromptUpdate(BaseModel):
 class PromptResponse(PromptBase):
     id: int
 
-class PromptTypeSubtypeResponse(BaseModel):
-    types: Dict[str, List[str]]
-
     class Config:
         from_attributes = True
