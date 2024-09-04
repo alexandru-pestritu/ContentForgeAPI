@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.prompt import Prompt
 from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 def create_prompt(db: Session, prompt: PromptCreate) -> PromptResponse:
     new_prompt = Prompt(**prompt.model_dump())
@@ -67,3 +67,31 @@ def delete_prompt(db: Session, prompt_id: int) -> Optional[PromptResponse]:
         db.commit()
         return PromptResponse.model_validate(prompt)
     return None
+
+def get_prompt_types_subtypes() -> Dict[str, List[str]]:
+    """
+    Return the available types and subtypes for prompts.
+    """
+    return {
+        "product": ["review", "proscons"],
+        "article": ["introduction", "buyers_guide", "faqs", "conclusion"]
+    }
+
+
+def get_placeholders_for_type(type: str) -> List[str]:
+    """
+    Return available placeholders for a given type (product or article).
+    """
+    placeholders = {
+        "product": [
+            "{name}", "{full_name}", "{affiliate_urls}", "{description}",
+            "{specifications}", "{seo_keyword}", "{pros}", "{cons}", "{review}", "{rating}",
+            "{image_urls}"
+        ],
+        "article": [
+            "{title}", "{slug}", "{content}", "{seo_keywords}", "{meta_title}", "{meta_description}", 
+            "{main_image_url}", "{buyers_guide_image_url}", "{products_id_list}", 
+            "{introduction}", "{buyers_guide}", "{faqs}", "{conclusion}"
+        ]
+    }
+    return placeholders.get(type, [])

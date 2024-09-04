@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
-from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse
+from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse, PromptTypeSubtypeResponse
 from app.crud.crud_prompt import (
     create_prompt, 
     get_prompt_by_id, 
     get_prompts, 
     update_prompt, 
-    delete_prompt
+    delete_prompt,
+    get_prompt_types_subtypes,
+    get_placeholders_for_type
 )
 from app.database import get_db
 from app.models.user import User  
@@ -84,3 +86,23 @@ async def delete_existing_prompt(
     if not deleted_prompt:
         raise HTTPException(status_code=404, detail="Prompt not found")
     return deleted_prompt
+
+@router.get("/types-subtypes/", response_model=PromptTypeSubtypeResponse)
+async def get_types_subtypes(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get available types and subtypes for prompts.
+    """
+    types_subtypes = get_prompt_types_subtypes()
+    return {"types": types_subtypes}
+
+@router.get("/placeholders/{type}", response_model=List[str])
+async def get_placeholders(
+    type: str,
+    current_user: User = Depends(get_current_user) 
+):
+    """
+    Get available placeholders for a given type (product or article).
+    """
+    return get_placeholders_for_type(type)

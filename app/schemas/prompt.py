@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict, List, Optional
 
 class PromptBase(BaseModel):
     name: str
@@ -18,6 +18,9 @@ class PromptUpdate(BaseModel):
 
 class PromptResponse(PromptBase):
     id: int
+
+class PromptTypeSubtypeResponse(BaseModel):
+    types: Dict[str, List[str]]
 
     class Config:
         from_attributes = True
