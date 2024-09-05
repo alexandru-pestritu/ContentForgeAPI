@@ -10,7 +10,8 @@ from app.crud.crud_prompt import (
     update_prompt, 
     delete_prompt,
     get_prompt_types_subtypes,
-    get_placeholders_for_type
+    get_placeholders_for_type,
+    get_prompts_by_type_and_optional_subtype
 )
 from app.database import get_db
 from app.models.user import User  
@@ -44,6 +45,31 @@ async def read_prompts(
     """
     result = get_prompts(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     return result
+
+@router.get("/{prompt_type}", response_model=List[PromptResponse])
+async def read_prompts_by_type_and_optional_subtype(
+    prompt_type: str, 
+    prompt_subtype: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Retrieve all prompts of a specific type and optionally a subtype.
+    
+    :param prompt_type: The type of prompts to retrieve.
+    :param prompt_subtype: The optional subtype of prompts to retrieve.
+    :param db: Database session.
+    :param current_user: The current authenticated user.
+    :return: List of prompts.
+    """
+    prompts = get_prompts_by_type_and_optional_subtype(
+        db=db, 
+        prompt_type=prompt_type, 
+        prompt_subtype=prompt_subtype
+    )
+    return prompts
+
+
 
 @router.get("/{prompt_id}", response_model=PromptResponse)
 async def read_prompt(

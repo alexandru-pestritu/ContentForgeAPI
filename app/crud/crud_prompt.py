@@ -80,6 +80,30 @@ def get_prompt_types_subtypes() -> Dict[str, List[str]]:
         "Article": ["Introduction", "Buyer's Guide", "FAQs", "Conclusion"]
     }
 
+def get_prompts_by_type_and_optional_subtype(
+    db: Session, 
+    prompt_type: Optional[str] = None, 
+    prompt_subtype: Optional[str] = None
+) -> List[PromptResponse]:
+    """
+    Retrieve all prompts of a specific type and optionally a subtype.
+
+    :param db: Database session.
+    :param prompt_type: The optional type of prompts to retrieve.
+    :param prompt_subtype: The optional subtype of prompts to retrieve.
+    :return: List of prompts with the specified type and optional subtype.
+    """
+    query = db.query(Prompt)
+    
+    if prompt_type:
+        query = query.filter(Prompt.type == prompt_type)
+    
+    if prompt_subtype:
+        query = query.filter(Prompt.subtype == prompt_subtype)
+    
+    prompts = query.all()
+    return [PromptResponse.model_validate(prompt) for prompt in prompts]
+
 
 def get_placeholders_for_type(type: str) -> List[str]:
     """
