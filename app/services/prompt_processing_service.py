@@ -7,7 +7,6 @@ from app.models.prompt import Prompt
 from app.services.markdown_service import MarkdownService
 
 class PromptProcessingService:
-    @staticmethod
     def get_output_for_product(subtype: str) -> dict:
         """
         Returns the output JSON for product-related prompts based on the subtype.
@@ -27,7 +26,6 @@ class PromptProcessingService:
             }
         return {}
 
-    @staticmethod
     def get_output_for_article(subtype: str) -> dict:
         """
         Returns the output JSON for article-related prompts based on the subtype.
@@ -70,7 +68,6 @@ class PromptProcessingService:
             return {"conclusion": "Conclusion text here."}
         return {}
 
-    @staticmethod
     def replace_placeholders_for_product(db: Session, text: str, product_id: int, subtype: str) -> str:
         """
         Replace placeholders in the text with actual product data, including {output}.
@@ -102,7 +99,6 @@ class PromptProcessingService:
 
         return text
 
-    @staticmethod
     def replace_placeholders_for_article(db: Session, text: str, article_id: int, subtype: str) -> str:
         """
         Replace placeholders in the text with actual article data, including {output}.
@@ -144,7 +140,6 @@ class PromptProcessingService:
 
         return text
 
-    @staticmethod
     def prepare_product_prompt_for_ai(db: Session, prompt_id: int, product_id: int) -> Optional[str]:
         """
         Prepare a product-related prompt for AI consumption by replacing placeholders and converting to Markdown.
@@ -160,7 +155,6 @@ class PromptProcessingService:
 
         return markdown_text
 
-    @staticmethod
     def prepare_article_prompt_for_ai(db: Session, prompt_id: int, article_id: int) -> Optional[str]:
         """
         Prepare an article-related prompt for AI consumption by replacing placeholders and converting to Markdown.
