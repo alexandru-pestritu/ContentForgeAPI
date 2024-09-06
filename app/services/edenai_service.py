@@ -1,3 +1,4 @@
+import json
 import os
 import httpx
 from dotenv import load_dotenv
@@ -12,6 +13,8 @@ class EdenAIService:
         """
         self.base_url = "https://api.edenai.run/v2"
         self.api_key = os.getenv("EDENAI_API_KEY")
+        if not self.api_key:
+            raise ValueError("Missing EdenAI API key in environment variables.")
 
     async def get_providers_and_models(self, feature_name: str, subfeature_name: str) -> dict:
         """
@@ -27,25 +30,33 @@ class EdenAIService:
             'subfeature__name': subfeature_name
         }
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params)
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, params=params, timeout=30.0)
+                response.raise_for_status() 
+        except httpx.HTTPStatusError as http_err:
+            raise ValueError(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")
+        except httpx.RequestError as req_err:
+            raise ValueError(f"Request error occurred: {str(req_err)}")
+        except Exception as err:
+            raise ValueError(f"Unexpected error occurred: {str(err)}")
 
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            raise ValueError("Failed to decode JSON response from EdenAI API")
 
         formatted_data = {}
-
         for provider in response_json:
             provider_name = provider['provider']['name']
-
             if provider_name not in formatted_data:
                 formatted_data[provider_name] = []
 
-            for pricing in provider['pricings']:
-                model_name = pricing['model_name']
-                price = float(pricing['price'])
-                price_unit_quantity = pricing['price_unit_quantity']
-                price_unit_type = pricing['price_unit_type']
+            for pricing in provider.get('pricings', []):
+                model_name = pricing.get('model_name', 'unknown')
+                price = float(pricing.get('price', 0.0))
+                price_unit_quantity = pricing.get('price_unit_quantity', 1)
+                price_unit_type = pricing.get('price_unit_type', 'tokens')
 
                 if price_unit_quantity == 1000:
                     price_display = f"${price:.4f} per 1K {price_unit_type}"
@@ -83,11 +94,21 @@ class EdenAIService:
             "max_tokens": max_tokens
         }
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=headers)
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=payload, headers=headers, timeout=30.0)
+                response.raise_for_status() 
+        except httpx.HTTPStatusError as http_err:
+            raise ValueError(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")
+        except httpx.RequestError as req_err:
+            raise ValueError(f"Request error occurred: {str(req_err)}")
+        except Exception as err:
+            raise ValueError(f"Unexpected error occurred: {str(err)}")
 
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except json.JSONDecodeError:
+            raise ValueError("Failed to decode JSON response from EdenAI API")
 
         results = {}
         for provider_name, data in response_json.items():

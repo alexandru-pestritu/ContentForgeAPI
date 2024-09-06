@@ -7,7 +7,7 @@ from app.models.prompt import Prompt
 from app.services.markdown_service import MarkdownService
 
 class PromptProcessingService:
-    def get_output_for_product(subtype: str) -> dict:
+    def get_output_for_product(self, subtype: str) -> dict:
         """
         Returns the output JSON for product-related prompts based on the subtype.
         """
@@ -26,7 +26,7 @@ class PromptProcessingService:
             }
         return {}
 
-    def get_output_for_article(subtype: str) -> dict:
+    def get_output_for_article(self, subtype: str) -> dict:
         """
         Returns the output JSON for article-related prompts based on the subtype.
         """
@@ -55,12 +55,12 @@ class PromptProcessingService:
             return {
                 "faqs": [
                     {
-                        "question": "Question 1?",
-                        "answer": "Detailed answer for question 1."
+                        "title": "Question 1?",
+                        "description": "Detailed answer for question 1."
                     },
                     {
-                        "question": "Question 2?",
-                        "answer": "Detailed answer for question 2."
+                        "title": "Question 2?",
+                        "description": "Detailed answer for question 2."
                     }
                 ]
             }
@@ -68,7 +68,7 @@ class PromptProcessingService:
             return {"conclusion": "Conclusion text here."}
         return {}
 
-    def replace_placeholders_for_product(db: Session, text: str, product_id: int, subtype: str) -> str:
+    def replace_placeholders_for_product(self, db: Session, text: str, product_id: int, subtype: str) -> str:
         """
         Replace placeholders in the text with actual product data, including {output}.
         """
@@ -77,7 +77,7 @@ class PromptProcessingService:
         if not product:
             return text
 
-        output_json = PromptProcessingService.get_output_for_product(subtype)
+        output_json = self.get_output_for_product(subtype)
 
         replacements = {
             "{name}": product.name or "",
@@ -99,7 +99,7 @@ class PromptProcessingService:
 
         return text
 
-    def replace_placeholders_for_article(db: Session, text: str, article_id: int, subtype: str) -> str:
+    def replace_placeholders_for_article(self, db: Session, text: str, article_id: int, subtype: str) -> str:
         """
         Replace placeholders in the text with actual article data, including {output}.
         """
@@ -108,7 +108,7 @@ class PromptProcessingService:
         if not article:
             return text
 
-        output_json = PromptProcessingService.get_output_for_article(subtype)
+        output_json = self.get_output_for_article(subtype)
 
         seo_keywords = ", ".join(article.get_seo_keywords())
 
@@ -140,7 +140,7 @@ class PromptProcessingService:
 
         return text
 
-    def prepare_product_prompt_for_ai(db: Session, prompt_id: int, product_id: int) -> Optional[str]:
+    def prepare_product_prompt_for_ai(self, db: Session, prompt_id: int, product_id: int) -> Optional[str]:
         """
         Prepare a product-related prompt for AI consumption by replacing placeholders and converting to Markdown.
         """
@@ -148,14 +148,14 @@ class PromptProcessingService:
         if not prompt:
             return None
 
-        replaced_text = PromptProcessingService.replace_placeholders_for_product(db, prompt.text, product_id, prompt.subtype)
+        replaced_text = self.replace_placeholders_for_product(db, prompt.text, product_id, prompt.subtype)
 
         markdown_service = MarkdownService()
         markdown_text = markdown_service.html_to_markdown(replaced_text)
 
         return markdown_text
 
-    def prepare_article_prompt_for_ai(db: Session, prompt_id: int, article_id: int) -> Optional[str]:
+    def prepare_article_prompt_for_ai(self, db: Session, prompt_id: int, article_id: int) -> Optional[str]:
         """
         Prepare an article-related prompt for AI consumption by replacing placeholders and converting to Markdown.
         """
@@ -163,7 +163,7 @@ class PromptProcessingService:
         if not prompt:
             return None
 
-        replaced_text = PromptProcessingService.replace_placeholders_for_article(db, prompt.text, article_id, prompt.subtype)
+        replaced_text = self.replace_placeholders_for_article(db, prompt.text, article_id, prompt.subtype)
 
         markdown_service = MarkdownService()
         markdown_text = markdown_service.html_to_markdown(replaced_text)

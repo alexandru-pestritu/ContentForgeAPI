@@ -1,6 +1,10 @@
 from typing import Dict, Any
 import json
 
+from requests import Session
+
+from app.models.prompt import Prompt
+
 class AIResponseProcessingService:
     
     def clean_ai_response(self, ai_response: str) -> Dict[str, Any]:
@@ -20,17 +24,24 @@ class AIResponseProcessingService:
         except (json.JSONDecodeError, ValueError) as e:
             raise ValueError(f"Error cleaning and parsing AI response: {str(e)}")
 
-    def process_response(self, ai_response: str, prompt_type: str, prompt_subtype: str, obj_to_update: Any):
+    def process_response(self, db: Session, ai_response: str, prompt_id: int, obj_to_update: Any):
         """
-        Process the AI response and call the specific function based on the type and subtype of the prompt.
+        Process the AI response based on the prompt type and subtype retrieved from the database.
         
+        :param db: The database session.
         :param ai_response: The raw AI response as a string.
-        :param prompt_type: The type of the prompt (e.g., 'Product', 'Article').
-        :param prompt_subtype: The subtype of the prompt (e.g., 'Review', 'FAQs').
-        :param obj_to_update: The object to update based on the processed AI response.
+        :param prompt_id: The ID of the prompt to retrieve type and subtype information.
+        :param obj_to_update: The object (Product or Article) to update based on the processed AI response.
         """
         cleaned_json = self.clean_ai_response(ai_response)
         
+        prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
+        if not prompt:
+            raise ValueError(f"Prompt with ID {prompt_id} not found.")
+
+        prompt_type = prompt.type
+        prompt_subtype = prompt.subtype
+
         if prompt_type == "Product":
             if prompt_subtype == "Review":
                 self.process_product_review(cleaned_json, obj_to_update)
