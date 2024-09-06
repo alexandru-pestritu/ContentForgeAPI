@@ -49,7 +49,6 @@ async def generate_product_text(
             raise ValueError(f"Product with ID {product_id} not found.")
 
         prompt_text = prompt_processing_service.prepare_product_prompt_for_ai(db, prompt_id, product_id)
-        print(prompt_text)
         if not prompt_text:
             raise ValueError("Failed to prepare product prompt for AI.")
 
@@ -62,7 +61,6 @@ async def generate_product_text(
         ai_response = await edenai_service.execute_chat_prompt(providers, prompt_text)
         if provider_model not in ai_response:
             raise ValueError(f"No response from provider {provider_model}.")
-        print(ai_response)
 
         ai_response_processor.process_response(db, ai_response[provider_model]['generated_text'], prompt_id, product)
 
@@ -101,7 +99,6 @@ async def generate_article_text(
         prompt_text = prompt_processing_service.prepare_article_prompt_for_ai(db, prompt_id, article_id)
         if not prompt_text:
             raise ValueError("Failed to prepare article prompt for AI.")
-        print(prompt_text)
 
         if model=="default":
             provider_model = provider
@@ -112,7 +109,6 @@ async def generate_article_text(
         ai_response = await edenai_service.execute_chat_prompt(providers, prompt_text)
         if provider_model not in ai_response:
             raise ValueError(f"No response from provider {provider_model}.")
-        print(ai_response)
 
         ai_response_processor.process_response(db, ai_response[provider_model]['generated_text'], prompt_id, article)
 
