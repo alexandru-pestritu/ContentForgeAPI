@@ -20,3 +20,10 @@ class GutenbergBlock:
         """Render the block in Gutenberg format"""
         attrs_str = self.attrs_to_string()
         return f"<!-- wp:{self.block_type}{attrs_str} -->{self.inner_content}<!-- /wp:{self.block_type} -->"
+    
+    def escape_to_unicode(self, text: str) -> str:
+        """Transform special characters into Unicode escape sequences."""
+        return (text.replace("<", "\\u003c")
+                    .replace(">", "\\u003e")
+                    .replace('"', "\\u0022")
+                    .replace("&", "\\u0026"))

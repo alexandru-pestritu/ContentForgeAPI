@@ -1,19 +1,30 @@
+import uuid
 from app.models.gutenberg_blocks.gutenberg_block import GutenbergBlock
-
 
 class ReviewHeadingBlock(GutenbergBlock):
     def __init__(self, position: int, title: str, subtitle: str, image: dict = None):
-        attrs = {
+        unicode_title = self.escape_to_unicode(title)
+        escaped_subtitle = self.escape_to_unicode(subtitle)
+
+        self.attrs = {
             "position": position,
-            "title": title,
-            "subtitle": subtitle,
+            "title": unicode_title,
+            "subtitle": escaped_subtitle,
             "image": image if image else {"id": "", "url": "", "width": "", "height": "", "alt": ""}
         }
-        super().__init__(block_type="rehub/review-heading", attrs=attrs)
+
+    def attrs_to_string(self) -> str:
+        """Manually convert attributes to a string in the expected format."""
+        image = self.attrs["image"]
+        return (f'{{"position":"{self.attrs["position"]}",'
+                f'"title":"{self.attrs["title"]}",'
+                f'"subtitle":"{self.attrs["subtitle"]}",'
+                f'"image":{{"id":"{image["id"]}","url":"{image["url"]}","width":"{image["width"]}","height":"{image["height"]}","alt":"{image["alt"]}"}}}}')
 
     def render(self) -> str:
-        return f'<!-- wp:rehub/review-heading {self.attrs_to_string()} --><div id="{self.attrs["position"]}-{self.attrs["subtitle"].replace(" ", "-").lower()}" class="wp-block-rehub-review-heading"></div><!-- /wp:rehub/review-heading -->'
-
+        """Render the block with manual JSON-like format for attributes."""
+        attrs_str = self.attrs_to_string()
+        return f'<!-- wp:rehub/review-heading {attrs_str} --><div id="{self.attrs["position"]}-{self.attrs["subtitle"].replace(" ", "-").lower()}" class="wp-block-rehub-review-heading"></div><!-- /wp:rehub/review-heading -->'
 
 class SliderBlock(GutenbergBlock):
     def __init__(self, slides: list):
@@ -40,9 +51,12 @@ class PromoBoxBlock(GutenbergBlock):
         :param button_text: Text for the button.
         :param button_link: URL link for the button.
         """
+        escaped_content = self.escape_to_unicode(content)
+        escaped_title = self.escape_to_unicode(title)
+
         attrs = {
-            "title": title,
-            "content": content,
+            "title": escaped_title,
+            "content": escaped_content,
             "backgroundColor": background_color,
             "showBorder": show_border,
             "highlightColor": highlight_color,
@@ -51,7 +65,18 @@ class PromoBoxBlock(GutenbergBlock):
         }
         super().__init__(block_type="rehub/promo-box", attrs=attrs)
 
+    def attrs_to_string(self) -> str:
+        """Manually convert attributes to a string in the expected format."""
+        return (f'{{"title":"{self.attrs["title"]}",'
+                f'"content":"{self.attrs["content"]}",'
+                f'"backgroundColor":"{self.attrs["backgroundColor"]}",'
+                f'"showBorder":{str(self.attrs["showBorder"]).lower()},'
+                f'"highlightColor":"{self.attrs["highlightColor"]}",'
+                f'"buttonText":"{self.attrs["buttonText"]}",'
+                f'"buttonLink":"{self.attrs["buttonLink"]}"}}')
+
     def render(self) -> str:
+        """Render the block with manual JSON-like format for attributes."""
         return f'<!-- wp:rehub/promo-box {self.attrs_to_string()} /-->'
 
 
@@ -67,7 +92,21 @@ class ProsConsBlock(GutenbergBlock):
         :param cons_bg_color: Background color for the cons section.
         :param cons_icon_color: Icon color for the cons section.
         """
+        unique_id = uuid.uuid4().hex[:6]  
+        block_id = str(uuid.uuid4()) 
+        
         attrs = {
+            "uniqueId": unique_id,
+            "block_id": block_id,
+            "boxShadow": {
+                "openShadow": 0,
+                "inset": 0,
+                "horizontal": 0,
+                "vertical": 8,
+                "blur": 35,
+                "spread": 0,
+                "color": "rgba(0,0,0,0.10)"
+            },
             "listTextItems": pros_items,
             "listTextItemsTwo": cons_items,
             "propsTitle": pros_title,
@@ -78,9 +117,26 @@ class ProsConsBlock(GutenbergBlock):
             "consIconColor": cons_icon_color
         }
         super().__init__(block_type="affiliate-booster/propsandcons", attrs=attrs)
+        self.unique_id = unique_id
+        self.block_id = block_id
 
     def render(self) -> str:
-        return f'<!-- wp:affiliate-booster/propsandcons {self.attrs_to_string()} /-->'
+        return (
+            f'<!-- wp:affiliate-booster/propsandcons {self.attrs_to_string()} -->'
+            f'<div id="affiliate-style-{self.block_id}" class="wp-block-affiliate-booster-propsandcons affiliate-block-{self.unique_id} affiliate-wrapper">'
+            f'<div class="affiliate-d-table affiliate-procon-inner">'
+            f'<div class="affiliate-block-advanced-list affiliate-props-list affiliate-alignment-left">'
+            f'<p class="affiliate-props-title affiliate-propcon-title"> {self.attrs["propsTitle"]} </p>'
+            f'<ul class="affiliate-list affiliate-list-type-unordered affiliate-list-bullet-check-circle">'
+            + ''.join([f'<li>{pro}</li>' for pro in self.attrs["listTextItems"]]) +
+            f'</ul></div>'
+            f'<div class="affiliate-block-advanced-list affiliate-cons-list affiliate-alignment-left">'
+            f'<p class="affiliate-const-title affiliate-propcon-title"> {self.attrs["consTitle"]} </p>'
+            f'<ul class="affiliate-list affiliate-list-type-unordered affiliate-list-bullet-times-circle">'
+            + ''.join([f'<li>{con}</li>' for con in self.attrs["listTextItemsTwo"]]) +
+            f'</ul></div></div></div>'
+            f'<!-- /wp:affiliate-booster/propsandcons -->'
+        )
 
 
 class AffiliateButtonBlock(GutenbergBlock):

@@ -18,7 +18,7 @@ class ParagraphBlock(GutenbergBlock):
 class HeadingBlock(GutenbergBlock):
     def __init__(self, level: int, content: str):
         attrs = {"level": level}
-        super().__init__(block_type="heading", attrs=attrs, inner_content=f"<h{level}>{content}</h{level}>")
+        super().__init__(block_type="heading", attrs=attrs, inner_content=content)
 
     def render(self) -> str:
         return f'<!-- wp:heading {self.attrs_to_string()} --><h{self.attrs["level"]}>{self.inner_content}</h{self.attrs["level"]}><!-- /wp:heading -->'
