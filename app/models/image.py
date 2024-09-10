@@ -35,3 +35,11 @@ class Image:
     def get_all_sizes(self):
         """ Return all available sizes and their details """
         return self.sizes
+
+    def __repr__(self):
+        return (
+            f"Image(id={self.id}, url='{self.url}', mime_type='{self.mime_type}', "
+            f"title='{self.title}', alt_text='{self.alt_text}', width={self.width}, "
+            f"height={self.height}, author={self.author}, modified='{self.modified}', "
+            f"uploaded_to={self.uploaded_to})"
+        )

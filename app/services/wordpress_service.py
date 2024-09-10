@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from typing import Optional
 import mimetypes
 
+from app.models.image import Image
+
 load_dotenv()
 
 class WordPressService:
@@ -67,19 +69,27 @@ class WordPressService:
             response = await client.post(url, json=data, headers=headers)
             response.raise_for_status()
 
-    async def get_image_info(self, image_id: int) -> dict:
+    async def get_image_by_id(self, image_id: int) -> Optional[Image]:
         """
-        Retrieve information about an image from WordPress using its ID.
+        Retrieve an image by its ID from WordPress and return an Image object.
+
+        :param image_id: The ID of the image in WordPress.
+        :return: An Image object or None if not found.
         """
         url = f"{self.base_url}/media/{image_id}"
         headers = {
             'Authorization': f'Basic {self.token}',
         }
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                image_data = response.json()
+                return Image(image_data)
+        except httpx.HTTPStatusError as exc:
+            print(f"Error fetching image with ID {image_id}: {exc}")
+            return None
         
     async def get_users(self) -> list:
         """
