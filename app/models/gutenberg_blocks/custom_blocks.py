@@ -1,3 +1,4 @@
+import json
 import uuid
 from app.models.gutenberg_blocks.gutenberg_block import GutenbergBlock
 
@@ -206,8 +207,8 @@ class AccordionBlock(GutenbergBlock):
 
 
 class ComparisonItemBlock:
-    def __init__(self, badge_color: str, product_image: dict, product_title: str, product_subtitle: str, number_value: int, 
-                 bottom_text: str, pros_text: str, cons_text: str, spec_text: str, button_url: str, button_text: str, 
+    def __init__(self, badge_color: str, product_image: dict, product_title: str, product_subtitle: str, number_value: int,
+                 starRating: str, bottom_text: str, pros_text: str, cons_text: str, spec_text: str, button_url: str, button_text: str, 
                  button_target: bool, button_color: str, enable_badge: bool, enable_numbers: bool, enable_list_title: bool, 
                  bottom_title: str, pros_title: str, cons_title: str):
         """
@@ -216,6 +217,7 @@ class ComparisonItemBlock:
         :param product_title: Title of the product.
         :param product_subtitle: Subtitle of the product.
         :param number_value: The rank or number value for the product in the comparison.
+        :param starRating: The star rating of the product.
         :param bottom_text: The bottom text, typically specifications.
         :param pros_text: Text detailing the pros of the product.
         :param cons_text: Text detailing the cons of the product.
@@ -236,6 +238,7 @@ class ComparisonItemBlock:
         self.product_title = product_title
         self.product_subtitle = product_subtitle
         self.number_value = number_value
+        self.starRating = starRating
         self.bottom_text = bottom_text
         self.pros_text = pros_text
         self.cons_text = cons_text
@@ -253,16 +256,34 @@ class ComparisonItemBlock:
 
     def render(self) -> str:
         """
-        Render the ComparisonItemBlock as a valid Gutenberg block.
+        Render the ComparisonItemBlock as a valid Gutenberg block with correctly escaped JSON.
         """
-        return (f'<!-- wp:rehub/comparison-item {{"badgeColor":"{self.badge_color}","productImage":{self.product_image},'
-                f'"productTitle":"{self.product_title}","productSubtitle":"{self.product_subtitle}","numberValue":"{self.number_value}",'
-                f'"bottomText":"{self.bottom_text}","prosText":"{self.pros_text}","consText":"{self.cons_text}",'
-                f'"specText":"{self.spec_text}","buttonUrl":"{self.button_url}","buttonText":"{self.button_text}",'
-                f'"buttonTarget":{str(self.button_target).lower()},"buttonColor":"{self.button_color}","enableBadge":{str(self.enable_badge).lower()},'
-                f'"enableNumbers":{str(self.enable_numbers).lower()},"enableListTitle":{str(self.enable_list_title).lower()},'
-                f'"bottomTitle":"{self.bottom_title}","prosTitle":"{self.pros_title}","consTitle":"{self.cons_title}"}} /-->')
+        attributes = {
+            "badgeColor": self.badge_color,
+            "productImage": self.product_image,
+            "productTitle": self.product_title,
+            "productSubtitle": self.product_subtitle,
+            "numberValue": str(self.number_value),  
+            "bottomText": self.bottom_text,
+            "starRating": self.starRating,
+            "prosText": self.pros_text,
+            "consText": self.cons_text,
+            "specText": self.spec_text,
+            "buttonUrl": self.button_url,
+            "buttonText": self.button_text,
+            "buttonTarget": self.button_target,
+            "buttonColor": self.button_color,
+            "enableBadge": self.enable_badge,
+            "enableNumbers": self.enable_numbers,
+            "enableListTitle": self.enable_list_title,
+            "bottomTitle": self.bottom_title,
+            "prosTitle": self.pros_title,
+            "consTitle": self.cons_title
+        }
 
+        attributes_str = json.dumps(attributes, ensure_ascii=False)
+        
+        return f'<!-- wp:rehub/comparison-item {attributes_str} /-->'
 
 class ComparisonTableBlock:
     def __init__(self, enable_numbers: bool, enable_list_title: bool, bottom_title: str, pros_title: str, cons_title: str, 

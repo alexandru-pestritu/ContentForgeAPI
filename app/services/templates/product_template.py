@@ -37,7 +37,7 @@ class ProductTemplate:
 
     async def render_review_heading(self) -> str:
         title = f'<a href="{self.product.affiliate_urls[0]}">{self.product.name}</a>'
-        subtitle = self.product.seo_keyword
+        subtitle = self.product.seo_keyword.capitalize()
         return ReviewHeadingBlock(position=self.position, title=title, subtitle=subtitle).render()
 
     async def render_slider(self) -> str:
