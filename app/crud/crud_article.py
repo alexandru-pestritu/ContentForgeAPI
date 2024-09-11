@@ -132,6 +132,10 @@ async def update_article(
     if 'buyers_guide_image_url' in update_data:
         update_data['buyers_guide_image_url'] = str(update_data['buyers_guide_image_url'])
 
+    for key, value in update_data.items():
+        if key not in ('seo_keywords', 'products_id_list', 'categories_id_list', 'faqs'):
+            setattr(article, key, value)
+
     if image_service:
         if 'main_image_url' in update_data and update_data['main_image_url']:
             main_image_id = await image_service.process_featured_image(
@@ -152,10 +156,6 @@ async def update_article(
                 target_height=960
             )
             article.buyers_guide_image_wp_id = buyers_guide_image_id
-
-    for key, value in update_data.items():
-        if key not in ('seo_keywords', 'products_id_list', 'categories_id_list', 'faqs'):
-            setattr(article, key, value)
 
     db.commit()
     db.refresh(article)
