@@ -1,3 +1,4 @@
+from typing import Optional
 from app.models.gutenberg_blocks.gutenberg_block import GutenbergBlock
 
 
@@ -16,12 +17,38 @@ class ParagraphBlock(GutenbergBlock):
 
 
 class HeadingBlock(GutenbergBlock):
-    def __init__(self, level: int, content: str):
-        attrs = {"level": level}
+    def __init__(self, level: int, content: str, font_size: Optional[str] = None, line_height: Optional[str] = None):
+        """
+        :param level: Heading level (e.g., 2 for <h2>)
+        :param content: The content of the heading
+        :param font_size: Optional font size (e.g., "30px")
+        :param line_height: Optional line height (e.g., "1.3")
+        """
+        style = {}
+        if font_size:
+            style["fontSize"] = font_size
+        if line_height:
+            style["lineHeight"] = line_height
+
+        attrs = {}
+        if style:
+            attrs["style"] = {"typography": style}
+        else:
+            attrs["level"] = level
+
         super().__init__(block_type="heading", attrs=attrs, inner_content=content)
 
     def render(self) -> str:
-        return f'<!-- wp:heading {self.attrs_to_string()} --><h{self.attrs["level"]}>{self.inner_content}</h{self.attrs["level"]}><!-- /wp:heading -->'
+        level = self.attrs.get("level", 2)
+        style = self.attrs.get("style", {}).get("typography", {})
+        font_size = style.get("fontSize", "")
+        line_height = style.get("lineHeight", "")
+        
+        style_attr = ""
+        if font_size or line_height:
+            style_attr = f'style="font-size:{font_size};line-height:{line_height}"'
+
+        return f'<!-- wp:heading {self.attrs_to_string()} --><h{level} class="wp-block-heading" {style_attr}>{self.inner_content}</h{level}><!-- /wp:heading -->'
 
 
 class ImageBlock(GutenbergBlock):
