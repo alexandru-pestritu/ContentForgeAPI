@@ -127,6 +127,29 @@ class WordPressService:
             return response.json()
         
         
+    async def get_post_by_id(self, post_id: int) -> Optional[dict]:
+        """
+        Retrieve a post by its ID from WordPress.
+
+        :param post_id: The ID of the post in WordPress.
+        :return: A dictionary with the post data or None if not found.
+        """
+        url = f"{self.base_url}/posts/{post_id}"
+        headers = {
+            'Authorization': f'Basic {self.token}',
+            'Content-Type': 'application/json',
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                return response.json()
+        except httpx.HTTPStatusError as exc:
+            print(f"Error fetching post with ID {post_id}: {exc}")
+            return None
+
+        
     async def add_article(self, article: ArticleResponse) -> Optional[int]:
         """
         Adds a new article to WordPress and returns its WP ID.
@@ -143,7 +166,13 @@ class WordPressService:
             'status': article.status,
             'categories': article.categories_id_list or [], 
             'featured_media': article.main_image_wp_id, 
-            'content': article.content  
+            'content': article.content,
+            'yoast_meta': {
+            'yoast_wpseo_title': article.meta_title,
+            'yoast_wpseo_metadesc': article.meta_description,
+            'yoast_wpseo_focuskw': article.seo_keywords[0],
+            'yoast_wpseo_metakeywords': article.seo_keywords[1:],
+            }  
         }
 
         try:
@@ -178,7 +207,13 @@ class WordPressService:
             'status': article.status,
             'categories': article.categories_id_list or [], 
             'featured_media': article.main_image_wp_id,  
-            'content': article.content  
+            'content': article.content,
+            'yoast_meta': {
+            'yoast_wpseo_title': article.meta_title,
+            'yoast_wpseo_metadesc': article.meta_description,
+            'yoast_wpseo_focuskw': article.seo_keywords[0],
+            'yoast_wpseo_metakeywords': article.seo_keywords[1:],
+            }
         }
 
         try:
