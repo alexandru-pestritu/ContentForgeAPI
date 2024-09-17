@@ -5,7 +5,7 @@ from alembic import context
 from dotenv import load_dotenv
 
 from app.database import Base 
-from app.models import user, store, product, article, prompt  
+from app.models import user, store, product, article, prompt, stock_check_log
 
 load_dotenv()
 
