@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
@@ -25,6 +26,7 @@ async def create_product(
         in_stock=scraped_data.get('in_stock'),
         description=scraped_data.get('description'),
         full_name=scraped_data.get('full_name'),
+        last_checked=datetime.now(timezone.utc)
     )
 
     new_product.set_specifications(scraped_data.get('specifications', {}))

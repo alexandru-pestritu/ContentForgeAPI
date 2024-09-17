@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, Boolean
+from sqlalchemy import Column, DateTime, Integer, String, Text, Float, Boolean
 from app.database import Base
 import json
 
@@ -20,6 +20,7 @@ class Product(Base):
     rating = Column(Float, nullable=False) 
     image_urls = Column(Text, nullable=True)
     image_ids = Column(Text, nullable=True) 
+    last_checked = Column(DateTime, nullable=True)
 
     def set_store_ids(self, store_ids):
         """Accepts a list of store IDs and stores them as JSON."""

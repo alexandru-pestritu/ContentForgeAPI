@@ -24,11 +24,6 @@ async def create_article(
         buyers_guide_image_url=str(article.buyers_guide_image_url) if article.buyers_guide_image_url else None,
     )
 
-    new_article.set_seo_keywords(article.seo_keywords)
-    new_article.set_products_id_list(article.products_id_list)
-    new_article.set_categories_id_list(article.categories_id_list)
-
-
     if image_service:
         if new_article.main_image_url:
             main_image_id = await image_service.process_featured_image(
@@ -49,6 +44,10 @@ async def create_article(
                 target_height=960
             )
             new_article.buyers_guide_image_wp_id = buyers_guide_image_id
+
+    new_article.set_seo_keywords(article.seo_keywords)
+    new_article.set_products_id_list(article.products_id_list)
+    new_article.set_categories_id_list(article.categories_id_list)
 
     db.add(new_article)
     db.commit()
