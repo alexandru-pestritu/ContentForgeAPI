@@ -4,15 +4,17 @@ from app.models.gutenberg_blocks.default_blocks import SpacerBlock, ParagraphBlo
 from app.models.gutenberg_blocks.custom_blocks import AccordionBlock, ComparisonItemBlock, ComparisonTableBlock
 from app.schemas.article import ArticleResponse
 from app.crud.crud_product import get_product_by_id
+from app.services.specifications_filtering_service import SpecificationsFilteringService
 from app.services.wordpress_service import WordPressService
 from app.services.templates.product_template import ProductTemplate
 from sqlalchemy.orm import Session
 
 class ArticleTemplate:
-    def __init__(self, article: ArticleResponse, db: Session, wp_service: WordPressService):
+    def __init__(self, article: ArticleResponse, db: Session, wp_service: WordPressService, specifications_filter_service : SpecificationsFilteringService):
         self.article = article
         self.db = db
         self.wp_service = wp_service
+        self.specifications_filter_service = specifications_filter_service
         self.current_year = datetime.now().year
 
 
@@ -24,18 +26,30 @@ class ArticleTemplate:
 
     async def _get_products(self):
         """
-        Retrieves all products associated with the article and their first images.
+        Retrieves all products associated with the article, filters their specifications,
+        and returns them along with their first image data (if available).
         """
+        products_with_images = []
+
         products = []
         for product_id in self.article.products_id_list:
-            product = get_product_by_id(self.db, product_id)
+            product = get_product_by_id(self.db, product_id) 
             if product:
                 image_data = None
                 if product.image_ids:
                     image_id = product.image_ids[0]
-                    image_data = await self.wp_service.get_image_by_id(image_id)
-                products.append((product, image_data))
-        return products
+                    image_data = await self.wp_service.get_image_by_id(image_id) 
+                products_with_images.append((product, image_data))
+
+        products = [product for product, _ in products_with_images] 
+        filtered_products = self.specifications_filter_service.filter_specifications(products)
+
+        filtered_products_with_images = [
+            (filtered_product, image_data) 
+            for filtered_product, (_, image_data) in zip(filtered_products, products_with_images)
+        ]
+
+        return filtered_products_with_images
     
 
     async def _get_products_templates(self, products):
@@ -95,7 +109,8 @@ class ArticleTemplate:
             rounded_rating = self.round_rating(product.rating)
 
             specifications = product.specifications or {}
-            bottom_text = "<br><br>".join([f"<strong>{key}</strong><br>{value}" for key, value in specifications.items()])
+            top_specifications = list(specifications.items())[:4]
+            bottom_text = "<br><br>".join([f"<strong>{key}</strong><br>{value}" for key, value in top_specifications])
 
             comparison_item = ComparisonItemBlock(
                 badge_color="#bf000a",

@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.article import Article
 from app.schemas.article import ArticleResponse
 from app.schemas.product import ProductResponse
+from app.services.specifications_filtering_service import SpecificationsFilteringService
 from app.services.wordpress_service import WordPressService
 from app.services.templates.product_template import ProductTemplate
 from app.services.templates.article_template import ArticleTemplate
@@ -10,6 +11,7 @@ from app.crud.crud_article import get_article_by_id
 from typing import Dict, Any, Optional
 
 wp_service = WordPressService()
+specifications_filter_service = SpecificationsFilteringService()
 
 async def generate_product_widget(db: Session, product_id: int) -> Dict[str, Any]:
     """
@@ -54,7 +56,7 @@ async def generate_article_widget(
         if not article_response:
             raise ValueError(f"Article with ID {article_id} not found.")
 
-        article_template = ArticleTemplate(article_response, db, wp_service)
+        article_template = ArticleTemplate(article_response, db, wp_service, specifications_filter_service)
         generated_content = await article_template.render()
 
         article = db.query(Article).filter(Article.id == article_id).first()
