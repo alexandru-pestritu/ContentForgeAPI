@@ -24,4 +24,4 @@ ENV PYTHONPATH=/app
 
 RUN mkdir -p /app/db && chmod -R 777 /app/db
 
-CMD ["sh", "-c", "if [ ! -f /app/db/contentforge.db ]; then python scripts/init_db.py && python scripts/create_user.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && python scripts/create_user.py && uvicorn main:app --host 0.0.0.0 --port 8000"]
