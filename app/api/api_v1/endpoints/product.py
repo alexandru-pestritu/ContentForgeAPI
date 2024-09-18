@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from app.crud.crud_product import (
-    create_product, 
+    create_product,
+    get_out_of_stock_products_with_articles, 
     get_product_by_id, 
     get_products, 
     update_product, 
@@ -48,6 +49,18 @@ async def read_products(
     Retrieve a list of products with pagination, sorting, filtering, and total records.
     """
     result = get_products(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
+    return result
+
+
+@router.get("/out-of-stock", response_model=List[Dict[str, Any]])
+async def read_out_of_stock_products_with_articles(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Retrieve products that are out of stock and the articles they are part of.
+    """
+    result = get_out_of_stock_products_with_articles(db=db)
     return result
 
 

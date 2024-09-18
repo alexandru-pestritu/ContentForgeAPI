@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 from sqlalchemy.orm import Session
+from app.models.article import Article
 from app.models.product import Product
+from app.schemas.article import ArticleResponse
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from app.scrapers.scraper_factory import scraper_factory
 from app.services.image_metadata_service import ImageMetadataService
 from app.services.image_service import ImageService
@@ -96,6 +98,37 @@ def get_products(
         "products": [ProductResponse.from_orm(product) for product in products],
         "total_records": total_records
     }
+
+
+def get_out_of_stock_products_with_articles(db: Session) -> List[Dict[str, Any]]:
+    """
+    Retrieve products that are out of stock and the articles they are part of, using a single query for articles.
+    """
+    out_of_stock_products = db.query(Product).filter(Product.in_stock == False).all()
+
+    articles = db.query(Article).all()
+
+    article_product_map = {}
+
+    for article in articles:
+        product_ids = article.get_products_id_list()  
+
+        for product_id in product_ids:
+            if product_id not in article_product_map:
+                article_product_map[product_id] = []
+            article_product_map[product_id].append(article)
+
+    result = []
+
+    for product in out_of_stock_products:
+        related_articles = article_product_map.get(product.id, [])
+
+        result.append({
+            "product": ProductResponse.from_orm(product),
+            "articles": [ArticleResponse.from_orm(article) for article in related_articles]
+        })
+
+    return result
 
 
 async def update_product(
