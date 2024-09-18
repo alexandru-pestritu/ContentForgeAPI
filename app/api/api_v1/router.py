@@ -11,6 +11,6 @@ api_router.include_router(wordpress.router, prefix="/wordpress", tags=["wordpres
 api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 api_router.include_router(widgets.router, prefix="/widgets", tags=["widgets"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
-api_router.include_router(stock_check_log.router, prefix="/stock_check_logs", tags=["stock_check_logs"])
+api_router.include_router(stock_check_log.router, prefix="/stock-check-logs", tags=["stock_check_logs"])
 api_router.include_router(login.router, prefix="/login", tags=["login"])
 api_router.include_router(token.router, prefix="/token", tags=["token"])
