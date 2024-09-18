@@ -102,6 +102,14 @@ def get_articles(
     }
 
 
+def get_latest_articles(db: Session, limit: int) -> List[ArticleResponse]:
+    """
+    Retrieve the latest articles based on the highest IDs (as IDs are assigned incrementally).
+    """
+    articles = db.query(Article).order_by(Article.id.desc()).limit(limit).all()
+    return [ArticleResponse.from_orm(article) for article in articles]
+
+
 async def update_article(
     db: Session, 
     article_id: int, 

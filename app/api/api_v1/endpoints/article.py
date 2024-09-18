@@ -5,7 +5,8 @@ from app.schemas.article import ArticleCreate, ArticleUpdate, ArticleResponse
 from app.crud.crud_article import (
     create_article, 
     get_article_by_id, 
-    get_articles, 
+    get_articles,
+    get_latest_articles, 
     update_article, 
     delete_article
 )
@@ -33,6 +34,19 @@ async def create_new_article(
         image_service = ImageService(wordpress_service)
     
     return await create_article(db=db, article=article, image_service=image_service)
+
+@router.get("/latest", response_model=List[ArticleResponse])
+async def read_latest_articles(
+    limit: int = 5,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Retrieve the latest articles, based on the highest ID (as a proxy for the most recent articles).
+    """
+    latest_articles = get_latest_articles(db=db, limit=limit)
+    return latest_articles
+
 
 @router.get("/", response_model=Dict[str, Any])
 async def read_articles(
@@ -64,6 +78,7 @@ async def read_article(
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
     return article
+
 
 @router.put("/{article_id}", response_model=ArticleResponse)
 async def update_existing_article(

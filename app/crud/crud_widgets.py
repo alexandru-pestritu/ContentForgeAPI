@@ -61,7 +61,6 @@ async def generate_article_widget(
 
         article = db.query(Article).filter(Article.id == article_id).first()
         article.content = generated_content
-        article.status = "publish"
         db.commit()
         article_response.content = generated_content
 
@@ -77,6 +76,7 @@ async def generate_article_widget(
 
             if wp_id:
                 article.wp_id = wp_id
+                article.status = "publish"
                 db.commit()
 
         return {
