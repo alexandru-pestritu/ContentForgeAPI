@@ -25,6 +25,8 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost:4200",  # Angular development server
     "http://localhost:8000",  # FastAPI development server
+    "http://192.168.0.115:4200", #Angular production server
+    "http://192.168.0.115:8000", #FastAPI production server
 ]
 
 app.add_middleware(
