@@ -133,7 +133,7 @@ class AIResponseProcessingService:
         if "buyers_guide" in ai_json:
             guide_html = ""
             for section in ai_json["buyers_guide"]:
-                guide_html += f"<h4>{section['title']}</h4>"
+                guide_html += f"<h3>{section['title']}</h3>"
                 guide_html += "".join([f"<p>{para}</p>" for para in section['paragraphs']])
             article.buyers_guide = guide_html
         else:

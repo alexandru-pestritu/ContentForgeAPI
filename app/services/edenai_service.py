@@ -32,7 +32,7 @@ class EdenAIService:
 
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.get(url, params=params, timeout=30.0)
+                response = await client.get(url, params=params, timeout=60.0)
                 response.raise_for_status() 
         except httpx.HTTPStatusError as http_err:
             raise ValueError(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")
@@ -96,7 +96,7 @@ class EdenAIService:
 
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(url, json=payload, headers=headers, timeout=30.0)
+                response = await client.post(url, json=payload, headers=headers, timeout=60.0)
                 response.raise_for_status() 
         except httpx.HTTPStatusError as http_err:
             raise ValueError(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")

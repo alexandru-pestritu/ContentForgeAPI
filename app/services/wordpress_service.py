@@ -1,4 +1,5 @@
 import os
+import aiohttp
 import httpx
 import base64
 from dotenv import load_dotenv
@@ -34,26 +35,41 @@ class WordPressService:
         url = f"{self.base_url}/media"
         headers = {
             'Authorization': f'Basic {self.token}',
-            'Content-Disposition': f'attachment; filename={file_name}',
         }
 
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type:
             mime_type = 'application/octet-stream'
-        
-        with open(image_path, 'rb') as file:
-            files = {'file': (file_name, file, mime_type)}
-            async with httpx.AsyncClient() as client:
-                response = await client.post(url, headers=headers, files=files, timeout=60.0)
-                response.raise_for_status()
-                
-                data = response.json()
-                image_id = data.get('id')
 
-                if alt_text and image_id:
-                    await self.set_alt_text(image_id, alt_text)
+        # Read the image file
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
 
-                return image_id
+        # Use aiohttp to handle the multipart/form-data request
+        data = aiohttp.FormData()
+        data.add_field(
+            'file',
+            image_data,
+            filename=file_name,
+            content_type=mime_type
+        )
+
+        if alt_text:
+            data.add_field('alt_text', alt_text)
+
+        async with aiohttp.ClientSession() as session:
+            try:
+                async with session.post(url, data=data, headers=headers) as response:
+                    if response.status != 201:
+                        print(f"Error uploading image: {response.status}")
+                        print(f"Response content: {await response.text()}")
+                        return None
+                    response_data = await response.json()
+                    image_id = response_data.get('id')
+                    return image_id
+            except aiohttp.ClientError as e:
+                print(f"Error uploading image: {e}")
+                return None
             
 
     async def set_alt_text(self, image_id: int, alt_text: str):
