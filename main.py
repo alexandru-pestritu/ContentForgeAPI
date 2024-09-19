@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -22,12 +23,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = [
-    "http://localhost:4200",  # Angular development server
-    "http://localhost:8000",  # FastAPI development server
-    "http://192.168.0.115:4200", #Angular production server
-    "http://192.168.0.115:8000", #FastAPI production server
-]
+origins = os.getenv("CORS_ORIGINS", "http://localhost:4200,http://localhost:8000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
