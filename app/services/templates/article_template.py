@@ -90,12 +90,16 @@ class ArticleTemplate:
         return blocks
     
 
-    def round_rating(self, value: float, step: float = 0.5) -> float:
+    def round_rating(self, value: float) -> float:
         """
-        Rounds the rating to the nearest step (default step is 0.5).
+        Rounds the rating to the nearest whole or half (.5).
         """
-        return round(value * (1/step)) * step
-    
+        rounded_value = round(value * 2) / 2
+        
+        if rounded_value - value >= 0.25:
+            return rounded_value - 0.5  
+        return rounded_value 
+
 
     async def render_comparison_table(self, products):
         """
