@@ -77,11 +77,11 @@ class ArticleTemplate:
         Splits the content of the buyer's guide into appropriate Gutenberg blocks.
         """
         blocks = []
-        parts = re.findall(r'(<h4>.*?</h4>|<p>.*?</p>)', content, re.DOTALL)
+        parts = re.findall(r'(<h3>.*?</h3>|<p>.*?</p>)', content, re.DOTALL)
 
         for part in parts:
-            if part.startswith('<h4>'):
-                heading_content = re.sub(r'<\/?h4>', '', part).strip() 
+            if part.startswith('<h3>'):
+                heading_content = re.sub(r'<\/?h3>', '', part).strip() 
                 blocks.append(HeadingBlock(level=3, content=heading_content).render())
             elif part.startswith('<p>'):
                 paragraph_content = re.sub(r'<\/?p>', '', part).strip() 
