@@ -130,18 +130,35 @@ class WordPressService:
 
     async def get_categories(self) -> list:
         """
-        Retrieve a list of categories from WordPress.
+        Retrieve all categories from WordPress, handling pagination.
         """
         url = f"{self.base_url}/categories"
         headers = {
             'Authorization': f'Basic {self.token}',
         }
 
+        all_categories = []
+        page = 1
+
         async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        
+            while True:
+                params = {
+                    'per_page': 100,  
+                    'page': page      
+                }
+
+                response = await client.get(url, headers=headers, params=params)
+                response.raise_for_status()
+
+                categories = response.json()
+                if not categories:
+                    break  
+
+                all_categories.extend(categories)
+                page += 1 
+
+        return all_categories
+
         
     async def get_post_by_id(self, post_id: int) -> Optional[dict]:
         """
