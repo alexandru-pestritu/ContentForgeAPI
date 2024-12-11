@@ -12,24 +12,29 @@ def check_and_update_product_stock(db: Session, product: Product) -> bool:
     """
     Checks the stock status of a product and updates its details if necessary.
     Returns True if the product is in stock, False otherwise.
+    If an error occurs during scraping, the product is skipped.
     """
-    affiliate_urls = product.get_affiliate_urls()
-    scraper = scraper_factory(affiliate_urls[0])
-    scraped_data = scraper.scrape_product_data()
+    try:
+        affiliate_urls = product.get_affiliate_urls()
+        scraper = scraper_factory(affiliate_urls[0])
+        scraped_data = scraper.scrape_product_data()
 
-    in_stock = scraped_data.get('in_stock')
+        in_stock = scraped_data.get('in_stock')
 
-    if product.in_stock != in_stock:
-        product.in_stock = in_stock
-        product.description = scraped_data.get('description')
-        product.full_name = scraped_data.get('full_name')
-        product.set_specifications(scraped_data.get('specifications', {}))
-        product.set_image_urls(scraped_data.get('image_urls', []))
+        if product.in_stock != in_stock:
+            product.in_stock = in_stock
+            product.description = scraped_data.get('description')
+            product.full_name = scraped_data.get('full_name')
+            product.set_specifications(scraped_data.get('specifications', {}))
+            product.set_image_urls(scraped_data.get('image_urls', []))
 
-    product.last_checked = datetime.now(timezone.utc)
-    db.commit()
+        product.last_checked = datetime.now(timezone.utc)
+        db.commit()
 
-    return in_stock
+        return in_stock
+    except Exception as e:
+        print(f"Error while checking product {product.id}: {e}")
+        return product.in_stock
 
 
 def update_product_stocks(db: Session, manual_run: bool = False):
