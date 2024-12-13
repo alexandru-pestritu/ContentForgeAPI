@@ -161,3 +161,4 @@ cython_debug/
 
 # exclude db files
 *.db
+.DS_Store
