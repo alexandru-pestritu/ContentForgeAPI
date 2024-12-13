@@ -1,9 +1,11 @@
+from io import StringIO
 from urllib.parse import urlparse
 from sqlalchemy.orm import Session
 from app.models.store import Store
 from app.schemas.stores import StoreCreate, StoreUpdate, StoreResponse
 from typing import List, Optional
 from app.services.image_service import ImageService
+import csv
 
 async def create_store(
     db: Session, 
@@ -119,3 +121,44 @@ def delete_store(
         db.commit()
         return StoreResponse.model_validate(store)
     return None
+
+
+def export_stores(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None
+) -> str:
+    """
+    Export stores as a CSV string based on pagination, filtering, and sorting.
+    """
+    query = db.query(Store)
+
+    if filter:
+        filter_pattern = f"%{filter}%"
+        query = query.filter(
+            Store.name.ilike(filter_pattern) |
+            Store.base_url.ilike(filter_pattern)
+        )
+
+    if sort_field:
+        sort_attr = getattr(Store, sort_field, None)
+        if sort_attr:
+            if sort_order == -1:
+                query = query.order_by(sort_attr.desc())
+            else:
+                query = query.order_by(sort_attr.asc())
+
+    query = query.offset(skip).limit(limit)
+
+    stores = query.all()
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "name", "base_url", "favicon_image_id", "favicon_url"])
+    for store in stores:
+        writer.writerow([store.id, store.name, store.base_url, store.favicon_image_id, store.favicon_url])
+
+    return output.getvalue()
