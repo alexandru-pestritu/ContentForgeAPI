@@ -73,10 +73,7 @@ async def export_store_data(
         filter=filter
     )
     
-    response = StreamingResponse(
-        iter([csv_data]),
-        media_type="text/csv"
-    )
+    response = StreamingResponse(io.StringIO(csv_data), media_type="text/csv")
     response.headers["Content-Disposition"] = "attachment; filename=stores_export.csv"
     return response
 

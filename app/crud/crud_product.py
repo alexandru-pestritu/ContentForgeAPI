@@ -1,4 +1,7 @@
+import csv
 from datetime import datetime, timezone
+import io
+import json
 from sqlalchemy.orm import Session
 from app.models.article import Article
 from app.models.product import Product
@@ -82,7 +85,7 @@ def get_products(
         filter_pattern = f"%{filter}%"
         query = query.filter(
             Product.name.ilike(filter_pattern) |
-            Product.description.ilike(filter_pattern)
+            Product.seo_keyword.ilike(filter_pattern)
         )
 
     if sort_field:
@@ -193,3 +196,65 @@ def delete_product(
         db.commit()
         return ProductResponse.from_orm(product)
     return None
+
+
+def export_products(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None
+) -> str:
+    """
+    Export products as a CSV string based on pagination, filtering, and sorting.
+    """
+    query = db.query(Product)
+
+    if filter:
+        filter_pattern = f"%{filter}%"
+        query = query.filter(
+            Product.name.ilike(filter_pattern) |
+            Product.seo_keyword.ilike(filter_pattern)
+        )
+
+    if sort_field:
+        sort_attr = getattr(Product, sort_field, None)
+        if sort_attr:
+            if sort_order == -1:
+                query = query.order_by(sort_attr.desc())
+            else:
+                query = query.order_by(sort_attr.asc())
+
+    query = query.offset(skip).limit(limit)
+
+    products = query.all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "id", "store_ids", "name", "full_name", "affiliate_urls", "in_stock",
+        "description", "specifications", "seo_keyword", "pros", "cons", "review",
+        "rating", "image_urls", "image_ids", "last_checked"
+    ])
+    for product in products:
+        writer.writerow([
+            product.id,
+            json.dumps(product.get_store_ids()),
+            product.name,
+            product.full_name,
+            json.dumps(product.get_affiliate_urls()),
+            product.in_stock,
+            product.description,
+            json.dumps(product.get_specifications()),
+            product.seo_keyword,
+            json.dumps(product.get_pros()),
+            json.dumps(product.get_cons()),
+            product.review,
+            product.rating,
+            json.dumps(product.get_image_urls()),
+            json.dumps(product.get_image_ids()),
+            product.last_checked
+        ])
+
+    return output.getvalue()

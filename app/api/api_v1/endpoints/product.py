@@ -1,4 +1,6 @@
+import io
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
@@ -8,7 +10,8 @@ from app.crud.crud_product import (
     get_product_by_id, 
     get_products, 
     update_product, 
-    delete_product
+    delete_product,
+    export_products
 )
 from app.database import get_db
 from app.models.user import User  
@@ -62,6 +65,32 @@ async def read_out_of_stock_products_with_articles(
     """
     result = get_out_of_stock_products_with_articles(db=db)
     return result
+
+@router.get("/export", response_class=StreamingResponse)
+async def export_product_data(
+    skip: int = 0,
+    limit: int = 10,
+    sort_field: Optional[str] = None,
+    sort_order: Optional[int] = None,
+    filter: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Export products as a CSV file based on the current table view.
+    """
+    csv_data = export_products(
+        db=db,
+        skip=skip,
+        limit=limit,
+        sort_field=sort_field,
+        sort_order=sort_order,
+        filter=filter
+    )
+
+    response = StreamingResponse(io.StringIO(csv_data), media_type="text/csv")
+    response.headers["Content-Disposition"] = "attachment; filename=products_export.csv"
+    return response
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
