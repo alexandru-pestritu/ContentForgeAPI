@@ -11,7 +11,6 @@ from app.crud.crud_article import (
     get_latest_articles, 
     update_article, 
     delete_article,
-    export_articles
 )
 from app.database import get_db
 from app.models.user import User  
@@ -66,33 +65,6 @@ async def read_articles(
     """
     result = get_articles(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     return result
-
-@router.get("/export", response_class=StreamingResponse)
-async def export_article_data(
-    skip: int = 0,
-    limit: int = 10,
-    sort_field: Optional[str] = None,
-    sort_order: Optional[int] = None,
-    filter: Optional[str] = None,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Export articles as a CSV file based on the current table view.
-    """
-    csv_data = export_articles(
-        db=db,
-        skip=skip,
-        limit=limit,
-        sort_field=sort_field,
-        sort_order=sort_order,
-        filter=filter
-    )
-
-    response = StreamingResponse(io.StringIO(csv_data), media_type="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=articles_export.csv"
-    return response
-
 
 @router.get("/{article_id}", response_model=ArticleResponse)
 async def read_article(
