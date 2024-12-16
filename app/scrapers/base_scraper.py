@@ -7,6 +7,7 @@ import requests
 load_dotenv()
 
 CRAWLBASE_API_KEY = os.getenv("CRAWLBASE_API_KEY")
+CRAWLBASE_API_KEY_JS = os.getenv("CRAWLBASE_API_KEY_JS")
 
 class BaseScraper(ABC):
     def __init__(self, product_url: str):
@@ -46,14 +47,23 @@ class BaseScraper(ABC):
 
     def _fetch_page_content(self) -> BeautifulSoup:
         """
-        Fetch the page content using Crawlbase.
+        Fetch the page content using Crawlbase with fallback for JavaScript API key.
         """
         if not CRAWLBASE_API_KEY:
             raise ValueError("CRAWLBASE_API_KEY is not set in the environment variables")
-        
-        crawlbase_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY}&url={self.product_url}"
 
+        crawlbase_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY}&url={self.product_url}"
         response = requests.get(crawlbase_url)
 
-        response.raise_for_status() 
+        if response.status_code != 200:
+            if not CRAWLBASE_API_KEY_JS:
+                raise ValueError("CRAWLBASE_API_KEY_JS is not set in the environment variables")
+            
+            print("Standard API failed. Retrying with JavaScript-enabled API...")
+            crawlbase_js_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY_JS}&url={self.product_url}"
+            response = requests.get(crawlbase_js_url)
+            
+        if response.status_code != 200:
+            raise RuntimeError(f"Failed to fetch page content after fallback. Status Code: {response.status_code}")
+        
         return BeautifulSoup(response.content, "html.parser")

@@ -15,6 +15,7 @@ ENV SECRET_KEY="change_me" \
     WORDPRESS_USERNAME="wordpress_account_username" \
     WORDPRESS_API_KEY="wordpress_application_password" \
     CRAWLBASE_API_KEY="your_crawlbase_api_key" \
+    CRAWLBASE_API_KEY_JS="your_crawlbase_api_key_js" \
     EDENAI_API_KEY="your_edenai_api_key" \
     SQLALCHEMY_DATABASE_URL="sqlite:///./db/contentforge.db" \
     CORS_ORIGINS="https://www.your-first-origin.com,https://www.your-second-origin.com"
