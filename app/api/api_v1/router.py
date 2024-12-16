@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import stores, login, product, article, token, wordpress, prompt, ai, widgets, dashboard, stock_check_log
+from app.api.api_v1.endpoints import stores, login, product, article, token, wordpress, prompt, ai, widgets, dashboard, stock_check_log, websocket, importer
 
 api_router = APIRouter()
 
@@ -14,3 +14,5 @@ api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboar
 api_router.include_router(stock_check_log.router, prefix="/stock-check-logs", tags=["stock_check_logs"])
 api_router.include_router(login.router, prefix="/login", tags=["login"])
 api_router.include_router(token.router, prefix="/token", tags=["token"])
+api_router.include_router(websocket.router, prefix="/ws", tags=["websockets"])
+api_router.include_router(importer.router, prefix="/import", tags=["importer"])
