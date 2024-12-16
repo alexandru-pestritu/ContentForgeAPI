@@ -7,11 +7,18 @@ from .task_manager import task_manager
 from app.models.importer import ImportStatus
 from .websocket_manager import websocket_manager
 from .store_importer import StoreImporter
+from .product_importer import ProductImporter
+from .article_importer import ArticleImporter
+from .prompt_importer import PromptImporter
 from sqlalchemy.orm import Session
 
 IMPORTERS = {
     "store": StoreImporter,
+    "product": ProductImporter,
+    "article": ArticleImporter,
+    "prompt": PromptImporter
 }
+
 
 class ImporterService:
     def __init__(self, db: Session):
