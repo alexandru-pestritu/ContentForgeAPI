@@ -59,7 +59,6 @@ class BaseScraper(ABC):
             if not CRAWLBASE_API_KEY_JS:
                 raise ValueError("CRAWLBASE_API_KEY_JS is not set in the environment variables")
             
-            print("Standard API failed. Retrying with JavaScript-enabled API...")
             crawlbase_js_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY_JS}&url={self.product_url}"
             response = requests.get(crawlbase_js_url)
             
