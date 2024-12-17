@@ -1,98 +1,81 @@
-from sqlalchemy import Column, DateTime, Integer, String, Text, Float, Boolean
+from sqlalchemy import Column, DateTime, Integer, String, Text, Float, Boolean, ForeignKey, Table
+from sqlalchemy.orm import relationship
 from app.database import Base
-import json
+from datetime import datetime, timezone
+
+product_store_association = Table(
+    "product_store_association",
+    Base.metadata,
+    Column("product_id", Integer, ForeignKey("products.id", ondelete="CASCADE"), primary_key=True),
+    Column("store_id", Integer, ForeignKey("stores.id", ondelete="CASCADE"), primary_key=True)
+)
 
 class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    store_ids = Column(Text, nullable=False)  
     name = Column(String, index=True, nullable=True)
     full_name = Column(String, nullable=True)
-    affiliate_urls = Column(Text, nullable=False) 
     in_stock = Column(Boolean, nullable=True)
     description = Column(Text, nullable=True)
-    specifications = Column(Text, nullable=True)
     seo_keyword = Column(String, nullable=False)
-    pros = Column(Text, nullable=True)
-    cons = Column(Text, nullable=True)
     review = Column(Text, nullable=True)
-    rating = Column(Float, nullable=False) 
-    image_urls = Column(Text, nullable=True)
-    image_ids = Column(Text, nullable=True) 
+    rating = Column(Float, nullable=False)
     last_checked = Column(DateTime, nullable=True)
 
-    def set_store_ids(self, store_ids):
-        """Accepts a list of store IDs and stores them as JSON."""
-        self.store_ids = json.dumps(store_ids)
+    stores = relationship("Store", secondary=product_store_association, back_populates="products")
+    affiliate_urls = relationship("ProductAffiliateURL", back_populates="product", cascade="all, delete-orphan")
+    specifications = relationship("ProductSpecification", back_populates="product", cascade="all, delete-orphan")
+    pros = relationship("ProductPro", back_populates="product", cascade="all, delete-orphan")
+    cons = relationship("ProductCon", back_populates="product", cascade="all, delete-orphan")
+    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
 
-    def get_store_ids(self):
-        """Returns the list of store IDs stored as JSON."""
-        if self.store_ids:
-            return json.loads(self.store_ids)
-        return []
-
-    def set_affiliate_urls(self, affiliate_urls):
-        """Accepts a list of affiliate URLs and stores them as JSON."""
-        affiliate_urls = [str(url) for url in affiliate_urls]
-        self.affiliate_urls = json.dumps(affiliate_urls)
-
-    def get_affiliate_urls(self):
-        """Returns the list of affiliate URLs stored as JSON."""
-        if self.affiliate_urls:
-            return json.loads(self.affiliate_urls)
-        return []
-
-    def set_image_ids(self, image_ids):
-        """Accepts a list of image IDs and stores them as JSON."""
-        self.image_ids = json.dumps(image_ids)
-
-    def get_image_ids(self):
-        """Returns the list of image IDs stored as JSON."""
-        if self.image_ids:
-            image_ids = json.loads(self.image_ids)
-            if all(isinstance(image_id, int) for image_id in image_ids):
-                return image_ids
-        return []
-
-    def set_specifications(self, specifications):
-        """Accepts a dictionary of specifications and stores them as JSON."""
-        self.specifications = json.dumps(specifications)
-
-    def get_specifications(self):
-        """Returns the dictionary of specifications stored as JSON."""
-        if self.specifications:
-            return json.loads(self.specifications)
-        return {}
-    
-    def set_pros(self, pros):
-        """Accepts a list of pros and stores them as JSON."""
-        self.pros = json.dumps(pros)
+    articles = relationship("Article", secondary="article_product_association", back_populates="products")
 
 
-    def get_pros(self):
-        """Returns the list of pros stored as JSON."""
-        if self.pros:
-            return json.loads(self.pros)
-        return []
-    
-    def set_cons(self, cons):
-        """Accepts a list of cons and stores them as JSON."""
-        self.cons = json.dumps(cons)
+class ProductAffiliateURL(Base):
+    __tablename__ = "product_affiliate_urls"
 
-    def get_cons(self):
-        """Returns the list of cons stored as JSON."""
-        if self.cons:
-            return json.loads(self.cons)
-        return []
-    
-    def set_image_urls(self, image_urls):
-        """Accepts a list of image URLs and stores them as JSON."""
-        image_urls = [str(url) for url in image_urls]
-        self.image_urls = json.dumps(image_urls)
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    url = Column(String, nullable=False)
 
-    def get_image_urls(self):
-        """Returns the list of image URLs stored as JSON."""
-        if self.image_urls:
-            return json.loads(self.image_urls)
-        return []
+    product = relationship("Product", back_populates="affiliate_urls")
+
+class ProductSpecification(Base):
+    __tablename__ = "product_specifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    spec_key = Column(String, nullable=False)
+    spec_value = Column(String, nullable=False)
+
+    product = relationship("Product", back_populates="specifications")
+
+class ProductImage(Base):
+    __tablename__ = "product_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    image_url = Column(String, nullable=False)
+    wp_id = Column(Integer, nullable=True)
+
+    product = relationship("Product", back_populates="images")
+
+class ProductPro(Base):
+    __tablename__ = "product_pros"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    text = Column(String, nullable=False)
+
+    product = relationship("Product", back_populates="pros")
+
+class ProductCon(Base):
+    __tablename__ = "product_cons"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    text = Column(String, nullable=False)
+
+    product = relationship("Product", back_populates="cons")
