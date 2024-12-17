@@ -1,74 +1,73 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Table, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
-import json
+
+article_product_association = Table(
+    "article_product_association",
+    Base.metadata,
+    Column("article_id", Integer, ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True),
+    Column("product_id", Integer, ForeignKey("products.id", ondelete="CASCADE"), primary_key=True)
+)
+
+article_category_association = Table(
+    "article_category_association",
+    Base.metadata,
+    Column("article_id", Integer, ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True),
+    Column("category_id", Integer, ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True)
+)
 
 class Article(Base):
     __tablename__ = "articles"
 
     id = Column(Integer, primary_key=True, index=True)
     wp_id = Column(Integer, nullable=True)
-    categories_id_list = Column(Text, nullable=True)
     title = Column(String, nullable=False)
     slug = Column(String, nullable=False)
     author_id = Column(Integer, nullable=True)
-    status = Column(String, nullable=True, default='draft') 
+    status = Column(String, nullable=True, default='draft')
     content = Column(Text, nullable=True)
 
-    seo_keywords = Column(Text, nullable=True)  
     meta_title = Column(String, nullable=True)
     meta_description = Column(String, nullable=True)
 
     main_image_url = Column(String, nullable=True)
-    main_image_wp_id = Column(Integer, nullable=True)  
+    main_image_wp_id = Column(Integer, nullable=True)
 
     buyers_guide_image_url = Column(String, nullable=True)
-    buyers_guide_image_wp_id = Column(Integer, nullable=True)  
+    buyers_guide_image_wp_id = Column(Integer, nullable=True)
 
-    products_id_list = Column(Text, nullable=True)  
     introduction = Column(Text, nullable=True)
     buyers_guide = Column(Text, nullable=True)
-    faqs = Column(Text, nullable=True)  
     conclusion = Column(Text, nullable=True)
 
-    
+    categories = relationship("Category", secondary="article_category_association", back_populates="articles", cascade="all, delete")
+    seo_keywords = relationship("ArticleSEOKeyword", back_populates="article", cascade="all, delete-orphan")
+    products = relationship("Product", secondary="article_product_association", back_populates="articles")
+    faqs = relationship("ArticleFAQ", back_populates="article", cascade="all, delete-orphan")
 
-    def set_seo_keywords(self, keywords):
-        """Accepts a list of SEO keywords and stores them as JSON."""
-        self.seo_keywords = json.dumps(keywords)
+class Category(Base):
+    __tablename__ = "categories"
 
-    def get_seo_keywords(self):
-        """Returns the list of SEO keywords stored as JSON."""
-        if self.seo_keywords:
-            return json.loads(self.seo_keywords)
-        return []
+    id = Column(Integer, primary_key=True, index=True)
+    wp_id = Column(Integer, nullable=False)
 
-    def set_products_id_list(self, product_ids):
-        """Accepts a list of product IDs and stores them as JSON."""
-        self.products_id_list = json.dumps(product_ids)
+    articles = relationship("Article", secondary="article_category_association", back_populates="categories")
 
-    def get_products_id_list(self):
-        """Returns the list of product IDs stored as JSON."""
-        if self.products_id_list:
-            return json.loads(self.products_id_list)
-        return []
+class ArticleFAQ(Base):
+    __tablename__ = "article_faqs"
 
-    def set_faqs(self, faqs):
-        """Accepts a list of FAQs (each as a dict with title and description) and stores them as JSON."""
-        self.faqs = json.dumps(faqs)
+    id = Column(Integer, primary_key=True, index=True)
+    article_id = Column(Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
+    question = Column(String, nullable=False)
+    answer = Column(Text, nullable=False)
 
-    def get_faqs(self):
-        """Returns the list of FAQs stored as JSON."""
-        if self.faqs:
-            return json.loads(self.faqs)
-        return [{}]
+    article = relationship("Article", back_populates="faqs")
 
-    def set_categories_id_list(self, category_ids):
-        """Accepts a list of category IDs and stores them as JSON."""
-        self.categories_id_list = json.dumps(category_ids)
+class ArticleSEOKeyword(Base):
+    __tablename__ = "article_seo_keywords"
 
-    def get_categories_id_list(self):
-        """Returns the list of category IDs stored as JSON."""
-        if self.categories_id_list:
-            return json.loads(self.categories_id_list)
-        return []
+    id = Column(Integer, primary_key=True, index=True)
+    article_id = Column(Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
+    keyword = Column(String, nullable=False)
+
+    article = relationship("Article", back_populates="seo_keywords")
