@@ -74,14 +74,13 @@ def export_products(
         "rating", "image_urls", "image_ids", "last_checked"
     ])
     for product in products:
-        store_ids_str = ",".join(map(str, product.get_store_ids())) if product.get_store_ids() else ""
-        affiliate_urls_str = ",".join(product.get_affiliate_urls()) if product.get_affiliate_urls() else ""
-        pros_str = ",".join(product.get_pros()) if product.get_pros() else ""
-        cons_str = ",".join(product.get_cons()) if product.get_cons() else ""
-        image_urls_str = ",".join(product.get_image_urls()) if product.get_image_urls() else ""
-        image_ids_str = ",".join(map(str, product.get_image_ids())) if product.get_image_ids() else ""
-
-        specifications_json = json.dumps(product.get_specifications()) if product.get_specifications() else ""
+        store_ids_str = ",".join(str(store.id) for store in product.stores)
+        affiliate_urls_str = ",".join(url.url for url in product.affiliate_urls)
+        specifications_json = json.dumps({spec.spec_key: spec.spec_value for spec in product.specifications})
+        pros_str = ",".join(pro.text for pro in product.pros)
+        cons_str = ",".join(con.text for con in product.cons)
+        image_urls_str = ",".join(img.image_url for img in product.images)
+        image_ids_str = ",".join(str(img.wp_id) for img in product.images)
 
         writer.writerow([
             product.id,
@@ -135,12 +134,10 @@ def export_articles(
         "introduction", "buyers_guide", "faqs", "conclusion"
     ])
     for article in articles:
-        categories_id_str = ",".join(map(str, article.get_categories_id_list())) if article.get_categories_id_list() else ""
-        seo_keywords_str = ",".join(article.get_seo_keywords()) if article.get_seo_keywords() else ""
-        products_id_list_str = ",".join(map(str, article.get_products_id_list())) if article.get_products_id_list() else ""
-
-        # faqs este o listă de dict-uri, o păstrăm ca JSON pentru că nu este ușor să o reprezentăm ca CSV
-        faqs_json = json.dumps(article.get_faqs()) if article.get_faqs() else ""
+        categories_id_str = ",".join(str(category.wp_id) for category in article.categories)
+        seo_keywords_str = ",".join(keyword.keyword for keyword in article.seo_keywords)
+        products_id_list_str = ",".join(str(product.id) for product in article.products)
+        faqs_json = json.dumps([{"title": faq.question, "description": faq.answer} for faq in article.faqs])
 
         writer.writerow([
             article.id,
