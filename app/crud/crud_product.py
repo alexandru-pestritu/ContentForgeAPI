@@ -4,7 +4,8 @@ import io
 import json
 from sqlalchemy.orm import Session
 from app.models.article import Article
-from app.models.product import Product
+from app.models.product import Product, ProductAffiliateURL, ProductSpecification, ProductPro, ProductCon, ProductImage
+from app.models.store import Store
 from app.schemas.article import ArticleResponse
 from app.schemas.product import ProductCreate, ProductUpdate, ProductResponse
 from typing import Any, Dict, List, Optional
@@ -24,6 +25,8 @@ async def create_product(
     scraper = scraper_factory(str(product.affiliate_urls[0]))
     scraped_data = scraper.scrape_product_data()
 
+    stores = db.query(Store).filter(Store.id.in_(product.store_ids)).all()
+
     new_product = Product(
         name=product.name,
         seo_keyword=product.seo_keyword,
@@ -31,25 +34,29 @@ async def create_product(
         in_stock=scraped_data.get('in_stock'),
         description=scraped_data.get('description'),
         full_name=scraped_data.get('full_name'),
-        last_checked=datetime.now(timezone.utc)
+        last_checked=datetime.now(timezone.utc),
+        stores=stores
     )
 
-    new_product.set_specifications(scraped_data.get('specifications', {}))
-    new_product.set_image_urls(scraped_data.get('image_urls', []))
-    new_product.set_store_ids(product.store_ids)
-    new_product.set_affiliate_urls(product.affiliate_urls)
+    new_product.affiliate_urls = [ProductAffiliateURL(url=str(url)) for url in product.affiliate_urls]
 
-    if image_service:
+    specifications = scraped_data.get('specifications', {})
+    new_product.specifications = [ProductSpecification(spec_key=k, spec_value=v) for k, v in specifications.items()]
+    
+    
+    image_urls = scraped_data.get('image_urls', [])
+    new_product.images = [ProductImage(image_url=img_url) for img_url in image_urls]
+
+    if image_service and new_product.images:
         image_metadata_service = ImageMetadataService()
-        image_ids = []
-        for index, image_url in enumerate(new_product.get_image_urls()):
-            image_filename, alt_text = image_metadata_service.generate_product_metadata(new_product.name, new_product.seo_keyword, new_product.full_name, index + 1)
-            image_path = await image_service.download_image(image_url)
+        for index, img_obj in enumerate(new_product.images, start=1):
+            image_filename, alt_text = image_metadata_service.generate_product_metadata(
+                new_product.name, new_product.seo_keyword, new_product.full_name, index
+            )
+            image_path = await image_service.download_image(img_obj.image_url)
             processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
-            image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
-            image_ids.append(image_id)
-
-        new_product.set_image_ids(image_ids)
+            wp_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
+            img_obj.wp_id = wp_id
 
     db.add(new_product)
     db.commit()
@@ -105,30 +112,16 @@ def get_products(
 
 def get_out_of_stock_products_with_articles(db: Session) -> List[Dict[str, Any]]:
     """
-    Retrieve products that are out of stock and the articles they are part of, using a single query for articles.
+    Retrieve products that are out of stock and the articles they are part of.
     """
     out_of_stock_products = db.query(Product).filter(Product.in_stock == False).all()
-
-    articles = db.query(Article).all()
-
-    article_product_map = {}
-
-    for article in articles:
-        product_ids = article.get_products_id_list()  
-
-        for product_id in product_ids:
-            if product_id not in article_product_map:
-                article_product_map[product_id] = []
-            article_product_map[product_id].append(article)
-
     result = []
 
     for product in out_of_stock_products:
-        related_articles = article_product_map.get(product.id, [])
-
+        articles = product.articles
         result.append({
             "product": ProductResponse.from_orm(product),
-            "articles": [ArticleResponse.from_orm(article) for article in related_articles]
+            "articles": [ArticleResponse.from_orm(article) for article in articles]
         })
 
     return result
@@ -144,39 +137,50 @@ async def update_product(
     Update an existing product record.
     """
     product = db.query(Product).filter(Product.id == product_id).first()
-    if product:
-        update_data = product_update.model_dump()
+    if not product:
+        return None
 
-        if 'store_ids' in update_data:
-            product.set_store_ids(update_data['store_ids'])
-        if 'affiliate_urls' in update_data:
-            product.set_affiliate_urls(update_data['affiliate_urls'])
-        if 'specifications' in update_data:
-            product.set_specifications(update_data['specifications'])
-        if 'pros' in update_data:
-            product.set_pros(update_data['pros'])
-        if 'cons' in update_data:
-            product.set_cons(update_data['cons'])
-        if 'image_urls' in update_data:
-            product.set_image_urls(update_data['image_urls'])
-        if 'image_ids' in update_data:
-            product.set_image_ids(update_data['image_ids'])
+    update_data = product_update.model_dump()
 
-        if image_service:
+    for attr in ["in_stock", "full_name", "description", "review", "name", "seo_keyword", "rating"]:
+        if attr in update_data and update_data[attr] is not None:
+            setattr(product, attr, update_data[attr])
+
+        if 'store_ids' in update_data and update_data['store_ids'] is not None:
+            stores = db.query(Store).filter(Store.id.in_(update_data['store_ids'])).all()
+            product.stores = stores
+
+        if 'affiliate_urls' in update_data and update_data['affiliate_urls'] is not None:
+            product.affiliate_urls.clear()
+            product.affiliate_urls = [ProductAffiliateURL(url=str(url)) for url in update_data['affiliate_urls']]
+
+        if 'specifications' in update_data and update_data['specifications'] is not None:
+            product.specifications.clear()
+            product.specifications = [
+                ProductSpecification(spec_key=k, spec_value=v) for k, v in update_data['specifications'].items()]
+             
+        if 'pros' in update_data and update_data['pros'] is not None:
+            product.pros.clear()
+            product.pros = [ProductPro(text=pro) for pro in update_data['pros']]
+
+        if 'cons' in update_data and update_data['cons'] is not None:
+            product.cons.clear()
+            product.cons = [ProductCon(text=con) for con in update_data['cons']]
+
+        if 'image_urls' in update_data and update_data['image_urls'] is not None:
+            product.images.clear()
+            product.images = [ProductImage(image_url=str(img_url)) for img_url in update_data['image_urls']]
+
+        if image_service and product.images:
             image_metadata_service = ImageMetadataService()
-            image_ids = []
-            for index, image_url in enumerate(product.get_image_urls()):
-                image_filename, alt_text = image_metadata_service.generate_product_metadata(product.name, product.seo_keyword, product.full_name, index + 1)
-                image_path = await image_service.download_image(image_url)
+            for index, img_obj in enumerate(product.images, start=1):
+                image_filename, alt_text = image_metadata_service.generate_product_metadata(
+                    product.name, product.seo_keyword, product.full_name, index
+                )
+                image_path = await image_service.download_image(img_obj.image_url)
                 processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
-                image_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
-                image_ids.append(image_id)
-
-            product.set_image_ids(image_ids)
-
-        for key, value in update_data.items():
-            if key not in ('store_ids', 'affiliate_urls', 'specifications', 'pros', 'cons', 'image_urls', 'image_ids'):
-                setattr(product, key, value)
+                wp_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
+                img_obj.wp_id = wp_id
 
         db.commit()
         db.refresh(product)
