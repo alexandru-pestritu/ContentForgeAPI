@@ -2,7 +2,8 @@ import csv
 import io
 import json
 from sqlalchemy.orm import Session
-from app.models.article import Article
+from app.models.article import Article, ArticleSEOKeyword, ArticleFAQ, Category
+from app.models.product import Product
 from app.schemas.article import ArticleCreate, ArticleUpdate, ArticleResponse
 from typing import List, Optional
 from app.services.image_service import ImageService
@@ -26,6 +27,16 @@ async def create_article(
         buyers_guide_image_url=str(article.buyers_guide_image_url) if article.buyers_guide_image_url else None,
     )
 
+    if article.seo_keywords is not None:
+        new_article.seo_keywords = [ArticleSEOKeyword(keyword=k) for k in article.seo_keywords]
+
+    if article.products_id_list is not None:
+        products = db.query(Product).filter(Product.id.in_(article.products_id_list)).all()
+        new_article.products = products
+
+    if article.categories_id_list is not None:
+        new_article.categories = [Category(wp_id=category_id) for category_id in article.categories_id_list]
+
     if image_service:
         if new_article.main_image_url:
             main_image_id = await image_service.process_featured_image(
@@ -46,10 +57,6 @@ async def create_article(
                 target_height=960
             )
             new_article.buyers_guide_image_wp_id = buyers_guide_image_id
-
-    new_article.set_seo_keywords(article.seo_keywords)
-    new_article.set_products_id_list(article.products_id_list)
-    new_article.set_categories_id_list(article.categories_id_list)
 
     db.add(new_article)
     db.commit()
@@ -127,14 +134,22 @@ async def update_article(
 
     update_data = article_update.model_dump()
 
-    if 'seo_keywords' in update_data:
-        article.set_seo_keywords(update_data['seo_keywords'])
-    if 'products_id_list' in update_data:
-        article.set_products_id_list(update_data['products_id_list'])
-    if 'categories_id_list' in update_data:
-        article.set_categories_id_list(update_data['categories_id_list'])
-    if 'faqs' in update_data:
-        article.set_faqs(update_data['faqs'])
+    if 'seo_keywords' in update_data and update_data['seo_keywords'] is not None:
+        article.seo_keywords.clear()
+        article.seo_keywords = [ArticleSEOKeyword(keyword=k) for k in update_data['seo_keywords']]
+
+    if 'products_id_list' in update_data and update_data['products_id_list'] is not None:
+        products = db.query(Product).filter(Product.id.in_(update_data['products_id_list'])).all()
+        article.products.clear()
+        article.products = products
+        
+    if 'categories_id_list' in update_data and update_data['categories_id_list'] is not None:
+        article.categories.clear()
+        article.categories = [Category(wp_id=category_id) for category_id in update_data['categories_id_list']]
+
+    if 'faqs' in update_data and update_data['faqs'] is not None:
+        article.faqs.clear()
+        article.faqs = [ArticleFAQ(question=faq['title'], answer=faq['description']) for faq in update_data['faqs']]
 
     if 'main_image_url' in update_data:
         update_data['main_image_url'] = str(update_data['main_image_url'])
