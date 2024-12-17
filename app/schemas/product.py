@@ -40,19 +40,19 @@ class ProductResponse(ProductBase):
         return cls(
             id=product.id,
             name=product.name,
-            full_name=product.full_name,
-            store_ids=product.get_store_ids(),
-            affiliate_urls=product.get_affiliate_urls(),
+            store_ids=[store.id for store in product.stores],
+            affiliate_urls=[HttpUrl(aff.url) for aff in product.affiliate_urls],
             seo_keyword=product.seo_keyword,
             rating=product.rating,
             in_stock=product.in_stock,
+            full_name=product.full_name,
             description=product.description,
-            specifications=product.get_specifications(),
-            image_urls=product.get_image_urls(),
-            image_ids=product.get_image_ids(),
+            specifications={spec.spec_key: spec.spec_value for spec in product.specifications},
+            image_urls=[HttpUrl(img.image_url) for img in product.images],
+            image_ids=[img.wp_id for img in product.images if img.wp_id is not None],
             review=product.review,
-            pros=product.get_pros(),
-            cons=product.get_cons(),
+            pros=[pro.text for pro in product.pros],
+            cons=[con.text for con in product.cons],
         )
 
     class Config:
