@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from typing import Generator
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import os
@@ -26,3 +26,15 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+@event.listens_for(Session, "after_flush")
+def delete_orphan_categories(session, flush_context):
+    
+    from app.models.article import Category 
+
+    orphan_categories = session.query(Category).filter(
+        ~Category.articles.any()
+    ).all()
+
+    for category in orphan_categories:
+        session.delete(category)
