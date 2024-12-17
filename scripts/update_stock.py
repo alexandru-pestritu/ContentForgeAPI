@@ -15,18 +15,14 @@ def check_and_update_product_stock(db: Session, product: Product) -> bool:
     If an error occurs during scraping, the product is skipped.
     """
     try:
-        affiliate_urls = product.get_affiliate_urls()
-        scraper = scraper_factory(affiliate_urls[0])
+        affiliate_urls = product.affiliate_urls
+        scraper = scraper_factory(affiliate_urls[0].url)
         scraped_data = scraper.scrape_product_data()
 
         in_stock = scraped_data.get('in_stock')
 
         if product.in_stock != in_stock:
             product.in_stock = in_stock
-            product.description = scraped_data.get('description')
-            product.full_name = scraped_data.get('full_name')
-            product.set_specifications(scraped_data.get('specifications', {}))
-            product.set_image_urls(scraped_data.get('image_urls', []))
 
         product.last_checked = datetime.now(timezone.utc)
         db.commit()
