@@ -20,7 +20,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Rulare migrații în modul offline."""
+    """Offline migration run."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -33,11 +33,12 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 def run_migrations_online() -> None:
-    """Rulare migrații în modul online."""
+    """Online migration run."""
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+    config.get_section(config.config_ini_section, {}),
+    prefix="sqlalchemy.",
+    poolclass=pool.NullPool,
+    connect_args={},
     )
 
     with connectable.connect() as connection:

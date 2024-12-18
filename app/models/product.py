@@ -23,14 +23,13 @@ class Product(Base):
     rating = Column(Float, nullable=False)
     last_checked = Column(DateTime, nullable=True)
 
+    articles = relationship("Article", secondary="article_product_association", back_populates="products")
     stores = relationship("Store", secondary=product_store_association, back_populates="products")
     affiliate_urls = relationship("ProductAffiliateURL", back_populates="product", cascade="all, delete-orphan")
     specifications = relationship("ProductSpecification", back_populates="product", cascade="all, delete-orphan")
     pros = relationship("ProductPro", back_populates="product", cascade="all, delete-orphan")
     cons = relationship("ProductCon", back_populates="product", cascade="all, delete-orphan")
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
-
-    articles = relationship("Article", secondary="article_product_association", back_populates="products")
 
 
 class ProductAffiliateURL(Base):

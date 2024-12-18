@@ -9,13 +9,6 @@ article_product_association = Table(
     Column("product_id", Integer, ForeignKey("products.id", ondelete="CASCADE"), primary_key=True)
 )
 
-article_category_association = Table(
-    "article_category_association",
-    Base.metadata,
-    Column("article_id", Integer, ForeignKey("articles.id", ondelete="CASCADE"), primary_key=True),
-    Column("category_id", Integer, ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True)
-)
-
 class Article(Base):
     __tablename__ = "articles"
 
@@ -40,9 +33,9 @@ class Article(Base):
     buyers_guide = Column(Text, nullable=True)
     conclusion = Column(Text, nullable=True)
 
-    categories = relationship("Category", secondary="article_category_association", back_populates="articles", cascade="all, delete")
-    seo_keywords = relationship("ArticleSEOKeyword", back_populates="article", cascade="all, delete-orphan")
     products = relationship("Product", secondary="article_product_association", back_populates="articles")
+    categories = relationship("Category", back_populates="article", cascade="all, delete-orphan")
+    seo_keywords = relationship("ArticleSEOKeyword", back_populates="article", cascade="all, delete-orphan")
     faqs = relationship("ArticleFAQ", back_populates="article", cascade="all, delete-orphan")
 
 class Category(Base):
@@ -51,7 +44,8 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     wp_id = Column(Integer, nullable=False)
 
-    articles = relationship("Article", secondary="article_category_association", back_populates="categories")
+    article_id = Column(Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=False)
+    article = relationship("Article", back_populates="categories")
 
 class ArticleFAQ(Base):
     __tablename__ = "article_faqs"
