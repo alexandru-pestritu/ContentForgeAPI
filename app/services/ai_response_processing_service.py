@@ -3,6 +3,8 @@ import json
 
 from requests import Session
 
+from app.models.article import ArticleFAQ
+from app.models.product import ProductCon, ProductPro
 from app.models.prompt import Prompt
 
 class AIResponseProcessingService:
@@ -88,8 +90,14 @@ class AIResponseProcessingService:
         }
         """
         if "pros" in ai_json and "cons" in ai_json:
-            product.set_pros(ai_json["pros"])
-            product.set_cons(ai_json["cons"])
+            product.pros.clear()
+            product.cons.clear()
+
+            for pro_text in ai_json["pros"]:
+                product.pros.append(ProductPro(text=pro_text))
+
+            for con_text in ai_json["cons"]:
+                product.cons.append(ProductCon(text=con_text))
         else:
             raise ValueError("Expected 'pros' and 'cons' keys in AI response for Product Pros & Cons.")
 
@@ -154,7 +162,10 @@ class AIResponseProcessingService:
         }
         """
         if "faqs" in ai_json:
-            article.set_faqs(ai_json["faqs"])
+            article.faqs.clear()
+
+            for faq in ai_json["faqs"]:
+                article.faqs.append(ArticleFAQ(question=faq["title"], answer=faq["description"]))
         else:
             raise ValueError("Expected 'faqs' key in AI response for Article FAQs.")
 
