@@ -7,7 +7,7 @@ import requests
 load_dotenv()
 
 CRAWLBASE_API_KEY = os.getenv("CRAWLBASE_API_KEY")
-CRAWLBASE_API_KEY_JS = os.getenv("CRAWLBASE_API_KEY_JS")
+SCRAPINGFISH_API_KEY = os.getenv("SCRAPINGFISH_API_KEY")
 
 class BaseScraper(ABC):
     def __init__(self, product_url: str):
@@ -56,11 +56,11 @@ class BaseScraper(ABC):
         response = requests.get(crawlbase_url)
 
         if response.status_code != 200:
-            if not CRAWLBASE_API_KEY_JS:
-                raise ValueError("CRAWLBASE_API_KEY_JS is not set in the environment variables")
+            if not SCRAPINGFISH_API_KEY:
+                raise ValueError("SCRAPINGFISH_API_KEY is not set in the environment variables")
             
-            crawlbase_js_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY_JS}&url={self.product_url}"
-            response = requests.get(crawlbase_js_url)
+            scrapingfish_url = f"https://scraping.narf.ai/api/v1/?api_key={SCRAPINGFISH_API_KEY}&url={self.product_url}"
+            response = requests.get(scrapingfish_url)
             
         if response.status_code != 200:
             raise RuntimeError(f"Failed to fetch page content after fallback. Status Code: {response.status_code}")
