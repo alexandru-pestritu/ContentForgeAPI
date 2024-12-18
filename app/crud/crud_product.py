@@ -168,8 +168,20 @@ async def update_product(
             product.cons = [ProductCon(text=con) for con in update_data['cons']]
 
         if 'image_urls' in update_data and update_data['image_urls'] is not None:
-            product.images.clear()
-            product.images = [ProductImage(image_url=str(img_url)) for img_url in update_data['image_urls']]
+            new_image_urls = set(
+                str(url) if str(url).startswith(('http://', 'https://')) else f"http://{str(url)}"
+                for url in update_data['image_urls']
+            )
+            existing_images = {img.image_url: img for img in product.images}
+            
+            for url in new_image_urls:
+                if url not in existing_images:
+                    product.images.append(ProductImage(image_url=url))
+
+            for existing_url, img_obj in list(existing_images.items()):
+                if existing_url not in new_image_urls:
+                    db.delete(img_obj)
+
 
         if image_service and product.images:
             image_metadata_service = ImageMetadataService()
