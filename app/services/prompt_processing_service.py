@@ -82,15 +82,15 @@ class PromptProcessingService:
         replacements = {
             "{name}": product.name or "",
             "{full_name}": product.full_name or "",
-            "{affiliate_urls}": ", ".join(product.get_affiliate_urls()),
+            "{affiliate_urls}": ", ".join([aff.url for aff in product.affiliate_urls]),
             "{description}": product.description or "",
-            "{specifications}": ", ".join([f"{k}: {v}" for k, v in product.get_specifications().items()]),
+            "{specifications}": ", ".join([f"{spec.spec_key}: {spec.spec_value}" for spec in product.specifications]),
             "{seo_keyword}": product.seo_keyword or "",
-            "{pros}": ", ".join(product.get_pros()),
-            "{cons}": ", ".join(product.get_cons()),
+            "{pros}": ", ".join([pro.text for pro in product.pros]),
+            "{cons}": ", ".join([con.text for con in product.cons]),
             "{review}": product.review or "",
             "{rating}": str(product.rating) if product.rating else "",
-            "{image_urls}": ", ".join(product.get_image_urls()),
+            "{image_urls}": ", ".join([img.image_url for img in product.images]),
             "{output}": json.dumps(output_json, indent=2)
         }
 
@@ -110,14 +110,15 @@ class PromptProcessingService:
 
         output_json = self.get_output_for_article(subtype)
 
-        seo_keywords = ", ".join(article.get_seo_keywords())
+        seo_keywords = ", ".join([kw.keyword for kw in article.seo_keywords])
 
-        product_info = []
-        product_ids = article.get_products_id_list()
-        if product_ids:
-            products = db.query(Product).filter(Product.id.in_(product_ids)).all()
-            product_info = [f"{product.name} - {product.seo_keyword}" for product in products]
-
+        products = article.products
+        product_info = [f"{product.name} - {product.seo_keyword}" for product in products]
+        faqs = [
+                {"title": faq.question, "description": faq.answer}
+                for faq in article.faqs
+            ] if article.faqs else []
+        
         replacements = {
             "{title}": article.title or "",
             "{slug}": article.slug or "",
@@ -130,7 +131,7 @@ class PromptProcessingService:
             "{products_id_list}": ", ".join(product_info),
             "{introduction}": article.introduction or "",
             "{buyers_guide}": article.buyers_guide or "",
-            "{faqs}": article.faqs or "",
+            "{faqs}": json.dumps(faqs, indent=2),
             "{conclusion}": article.conclusion or "",
             "{output}": json.dumps(output_json, indent=2)
         }
