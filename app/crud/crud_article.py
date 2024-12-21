@@ -42,13 +42,13 @@ async def create_article(
             new_article.main_image_wp_id = await image_service.process_image(
                 entity_type="article_main",
                 entity=new_article,
-                image_url=article.main_image_url
+                image_url=str(article.main_image_url)
             )
         if article.buyers_guide_image_url:
             new_article.buyers_guide_image_wp_id = await image_service.process_image(
                 entity_type="article_guide",
                 entity=new_article,
-                image_url=article.buyers_guide_image_url
+                image_url=str(article.buyers_guide_image_url)
             )
 
     db.add(new_article)
@@ -158,13 +158,13 @@ async def update_article(
             article.main_image_wp_id = await image_service.process_image(
                 entity_type="article_main",
                 entity=article,
-                image_url=update_data['main_image_url']
+                image_url=str(update_data['main_image_url'])
             )
         if 'buyers_guide_image_url' in update_data:
             article.buyers_guide_image_wp_id = await image_service.process_image(
                 entity_type="article_guide",
                 entity=article,
-                image_url=update_data['buyers_guide_image_url']
+                image_url=str(update_data['buyers_guide_image_url'])
             )
 
     db.commit()
