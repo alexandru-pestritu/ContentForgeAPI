@@ -36,12 +36,12 @@ class SettingsService:
         """
         default_settings = [
             # Scraping
-            {"key": "crawlbase_api_key", "value": "", "type": "string", "description": "API Key for Crawlbase scraping service."},
-            {"key": "scrapingfish_api_key", "value": "", "type": "string", "description": "API Key for Scrapingfish fallback scraping service."},
+            {"key": "crawlbase_api_key", "value": "your_crawlbase_api_key", "type": "string", "description": "API Key for Crawlbase scraping service."},
+            {"key": "scrapingfish_api_key", "value": "your_scrapingfish_api_key", "type": "string", "description": "API Key for Scrapingfish fallback scraping service."},
             {"key": "stock_check_log_interval", "value": "14", "type": "integer", "description": "Interval in days for checking product stock availability."},
 
             # AI Generation
-            {"key": "edenai_api_key", "value": "", "type": "string", "description": "API Key for EdenAI content generation service."},
+            {"key": "edenai_api_key", "value": "your_edenai_api_key", "type": "string", "description": "API Key for EdenAI content generation service."},
             {"key": "ai_default_provider", "value": "openai", "type": "string", "description": "Default AI provider for content generation."},
             {"key": "ai_default_model", "value": "gpt-4o", "type": "string", "description": "Default AI model for content generation."},
             {"key": "ai_temperature", "value": "0.1", "type": "float", "description": "Temperature for AI model."},
@@ -50,7 +50,7 @@ class SettingsService:
 
             # Specifications Filtering
             {"key": "max_specs", "value": "10", "type": "integer", "description": "Maximum number of specifications to display in WordPress widget."},
-            {"key": "specs_to_place_last", "value": "", "type": "string", "description": "Specifications to always place at the end of the list."},
+            {"key": "specs_to_place_last", "value": "Functii,Continut pachet", "type": "string", "description": "Specifications to always place at the end of the list."},
             {"key": "spec_relevance_percentage", "value": "0.5", "type": "float", "description": "Relevance threshold for specifications order."},
             {"key": "spec_variability_percentage", "value": "0.5", "type": "float", "description": "Variability threshold for specifications order."},
 
@@ -70,14 +70,14 @@ class SettingsService:
             # Main image
             {"key": "article_main_image_width", "value": "1400", "type": "integer", "description": "Article main image width"},
             {"key": "article_main_image_height", "value": "960", "type": "integer", "description": "Article main image height"},
-            {"key": "article_main_image_file_name", "{title}": "main_image", "type": "string", "description": "File name pattern for main article images."},
-            {"key": "article_main_image_alt_text", "{seo_keywords}": "Main article image", "type": "string", "description": "Alt text pattern for main article images."},
+            {"key": "article_main_image_file_name", "value": "{title}", "type": "string", "description": "File name pattern for main article images."},
+            {"key": "article_main_image_alt_text", "value": "{seo_keywords}", "type": "string", "description": "Alt text pattern for main article images."},
             
             # Buyer's Guide image
             {"key": "article_guide_image_width", "value": "1400", "type": "integer", "description": "Buyer's guide image width."},
             {"key": "article_guide_image_height", "value": "960", "type": "integer", "description": "Buyer's guide image height."},
-            {"key": "article_guide_image_file_name", "cum aleg {seo_keywords}": "guide_image", "type": "string", "description": "File name pattern for buyer's guide images."},
-            {"key": "article_guide_image_alt_text", "ghidul cumparatorului pentru {seo_keywords}": "Buyer's guide image", "type": "string", "description": "Alt text pattern for buyer's guide images."},
+            {"key": "article_guide_image_file_name", "value": "cum aleg {seo_keywords}", "type": "string", "description": "File name pattern for buyer's guide images."},
+            {"key": "article_guide_image_alt_text", "value": "ghidul cumparatorului pentru {seo_keywords}", "type": "string", "description": "Alt text pattern for buyer's guide images."},
         ]
 
         with SessionLocal() as db:

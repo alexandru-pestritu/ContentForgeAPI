@@ -10,9 +10,10 @@ from app.services.settings_service import SettingsService
 from app.services.placeholder_service import PlaceholderService
 
 class ImageService:
-    def __init__(self, wordpress_service: WordPressService, placeholder_service: PlaceholderService):
-        self.wordpress_service = wordpress_service
-        self.metadata_service = ImageMetadataService(placeholder_service)
+    def __init__(self, wordpress_service: WordPressService):
+        self.wordpress_service = wordpress_service  
+        self.placeholder_service = PlaceholderService()
+        self.metadata_service = ImageMetadataService(self.placeholder_service)
         self.image_dir = Path('images')
         self.image_dir.mkdir(exist_ok=True)
 

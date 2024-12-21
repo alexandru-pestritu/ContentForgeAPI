@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ValidationError
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 class SettingBase(BaseModel):
     key: str
@@ -8,18 +8,30 @@ class SettingBase(BaseModel):
     description: Optional[str] = None
 
     @staticmethod
-    def validate_value(setting_type: str, value: Any):
+    def validate_value(setting_type: str, value: Union[str, Any]):
         """
         Validate the value based on the setting type.
         """
-        if setting_type == "integer" and not isinstance(value, int):
-            raise ValueError("Value must be an integer")
-        elif setting_type == "float" and not isinstance(value, float):
-            raise ValueError("Value must be a float")
-        elif setting_type == "string" and not isinstance(value, str):
-            raise ValueError("Value must be a string")
-        elif setting_type == "boolean" and not isinstance(value, bool):
-            raise ValueError("Value must be a boolean")
+        try:
+            if setting_type == "integer":
+                if not isinstance(value, int):
+                    value = int(value)
+            elif setting_type == "float":
+                if not isinstance(value, float):
+                    value = float(value)
+            elif setting_type == "boolean":
+                if not isinstance(value, bool):
+                    if isinstance(value, str):
+                        value = value.lower() in ["true", "1", "yes"]
+                    else:
+                        raise ValueError("Value must be a boolean")
+            elif setting_type == "string":
+                if not isinstance(value, str):
+                    value = str(value)
+            else:
+                raise ValueError(f"Unsupported setting type: {setting_type}")
+        except ValueError:
+            raise ValueError(f"Value must be a valid {setting_type}")
 
 class SettingCreate(SettingBase):
     pass
@@ -31,4 +43,4 @@ class SettingResponse(SettingBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +21,6 @@ async def lifespan(app: FastAPI):
     Lifespan event handler for FastAPI that starts and stops the scheduler.
     """
 
-    SettingsService.initialize_default_settings()
     check_inteval_days = SettingsService.get_setting_value("stock_check_log_interval")
     
     scheduler.add_job(
