@@ -5,8 +5,7 @@ from app.models.product import Product
 from app.models.stock_check_log import StockCheckLog
 from app.scrapers.scraper_factory import scraper_factory
 from app.database import SessionLocal
-
-CHECK_INTERVAL_DAYS = 14
+from app.services.settings_service import SettingsService
 
 def check_and_update_product_stock(db: Session, product: Product) -> bool:
     """
@@ -39,6 +38,7 @@ def update_product_stocks(db: Session, manual_run: bool = False):
     or all products if this is a manual run. Logs the duration of the stock check and the number of in-stock 
     and out-of-stock products.
     """
+    check_inteval_days = SettingsService.get_setting_value("stock_check_log_interval")
     start_time = time.time()
 
     now = datetime.now(timezone.utc)
@@ -46,7 +46,7 @@ def update_product_stocks(db: Session, manual_run: bool = False):
     if manual_run:
         products_to_check = db.query(Product).all()
     else:
-        threshold_time = now - timedelta(days=CHECK_INTERVAL_DAYS)
+        threshold_time = now - timedelta(days=check_inteval_days)
         products_to_check = db.query(Product).filter(
             (Product.last_checked == None) | 
             (Product.last_checked < threshold_time)

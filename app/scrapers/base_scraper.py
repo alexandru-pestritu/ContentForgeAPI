@@ -1,13 +1,9 @@
 from abc import ABC, abstractmethod
 import os
-from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 import requests
 
-load_dotenv()
-
-CRAWLBASE_API_KEY = os.getenv("CRAWLBASE_API_KEY")
-SCRAPINGFISH_API_KEY = os.getenv("SCRAPINGFISH_API_KEY")
+from app.services.settings_service import SettingsService
 
 class BaseScraper(ABC):
     def __init__(self, product_url: str):
@@ -49,17 +45,20 @@ class BaseScraper(ABC):
         """
         Fetch the page content using Crawlbase with fallback for JavaScript API key.
         """
-        if not CRAWLBASE_API_KEY:
+        crawlbase_api_key = SettingsService.get_setting_value("crawlbase_api_key")
+        scrapingfish_api_key = SettingsService.get_setting_value("scrapingfish_api_key")
+
+        if not crawlbase_api_key:
             raise ValueError("CRAWLBASE_API_KEY is not set in the environment variables")
 
-        crawlbase_url = f"https://api.crawlbase.com/?token={CRAWLBASE_API_KEY}&url={self.product_url}"
+        crawlbase_url = f"https://api.crawlbase.com/?token={crawlbase_api_key}&url={self.product_url}"
         response = requests.get(crawlbase_url)
 
         if response.status_code != 200:
-            if not SCRAPINGFISH_API_KEY:
+            if not scrapingfish_api_key:
                 raise ValueError("SCRAPINGFISH_API_KEY is not set in the environment variables")
             
-            scrapingfish_url = f"https://scraping.narf.ai/api/v1/?api_key={SCRAPINGFISH_API_KEY}&url={self.product_url}"
+            scrapingfish_url = f"https://scraping.narf.ai/api/v1/?api_key={scrapingfish_api_key}&url={self.product_url}"
             response = requests.get(scrapingfish_url)
             
         if response.status_code != 200:

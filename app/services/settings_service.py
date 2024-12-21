@@ -39,7 +39,6 @@ class SettingsService:
             {"key": "crawlbase_api_key", "value": "", "type": "string", "description": "API Key for Crawlbase scraping service."},
             {"key": "scrapingfish_api_key", "value": "", "type": "string", "description": "API Key for Scrapingfish fallback scraping service."},
             {"key": "stock_check_log_interval", "value": "14", "type": "integer", "description": "Interval in days for checking product stock availability."},
-            {"key": "scrape_data_when_adding_product", "value": "true", "type": "boolean", "description": "Scrape data automatically when adding a product."},
 
             # AI Generation
             {"key": "edenai_api_key", "value": "", "type": "string", "description": "API Key for EdenAI content generation service."},

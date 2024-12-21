@@ -4,6 +4,8 @@ import httpx
 from dotenv import load_dotenv
 from typing import List, Dict, Optional
 
+from app.services.settings_service import SettingsService
+
 load_dotenv()
 
 class EdenAIService:
@@ -12,9 +14,9 @@ class EdenAIService:
         Initializes the EdenAIService with the base URL and API key from environment variables.
         """
         self.base_url = "https://api.edenai.run/v2"
-        self.api_key = os.getenv("EDENAI_API_KEY")
+        self.api_key = SettingsService.get_setting_value("edenai_api_key")
         if not self.api_key:
-            raise ValueError("Missing EdenAI API key in environment variables.")
+            raise ValueError("EdenAI API key is not set")
 
     async def get_providers_and_models(self, feature_name: str, subfeature_name: str) -> dict:
         """
@@ -83,6 +85,9 @@ class EdenAIService:
         :return: A dictionary with provider names as keys and a dictionary of generated text and cost as values.
         """
         url = f"{self.base_url}/text/chat"
+        temperature = SettingsService.get_setting_value("ai_temperature")
+        max_tokens = SettingsService.get_setting_value("ai_max_tokens")
+        request_timeout = SettingsService.get_setting_value("ai_timeout")
         headers = {
             'Authorization': f'Bearer {self.api_key}',
             'Content-Type': 'application/json'
@@ -96,7 +101,7 @@ class EdenAIService:
 
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(url, json=payload, headers=headers, timeout=60.0)
+                response = await client.post(url, json=payload, headers=headers, timeout=request_timeout)
                 response.raise_for_status() 
         except httpx.HTTPStatusError as http_err:
             raise ValueError(f"HTTP error occurred: {http_err.response.status_code} - {http_err.response.text}")

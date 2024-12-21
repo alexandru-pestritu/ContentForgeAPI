@@ -21,11 +21,12 @@ async def lifespan(app: FastAPI):
     """
 
     SettingsService.initialize_default_settings()
+    check_inteval_days = SettingsService.get_setting_value("stock_check_log_interval")
     
     scheduler.add_job(
         scheduled_stock_update,
         "interval",
-        days=14,
+        days=check_inteval_days,
         next_run_time=datetime.now(timezone.utc),
     )
     scheduler.start()
