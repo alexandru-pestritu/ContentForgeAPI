@@ -4,6 +4,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.models.user import User
+from app.services.settings_service import SettingsService
 from scripts.update_stock import scheduled_stock_update
 from app.api.api_v1.router import api_router
 from contextlib import asynccontextmanager
@@ -18,6 +19,9 @@ async def lifespan(app: FastAPI):
     """
     Lifespan event handler for FastAPI that starts and stops the scheduler.
     """
+
+    SettingsService.initialize_default_settings()
+    
     scheduler.add_job(
         scheduled_stock_update,
         "interval",
