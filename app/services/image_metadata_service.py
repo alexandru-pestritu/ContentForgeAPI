@@ -1,54 +1,28 @@
-from typing import Tuple
+from typing import Tuple, Optional
+from app.services.placeholder_service import PlaceholderService
+from app.services.settings_service import SettingsService
 
 class ImageMetadataService:
-    """
-    Service for generating image filenames and alt text optimized for SEO.
-    """
+    def __init__(self, placeholder_service: PlaceholderService):
+        self.placeholder_service = placeholder_service
 
-    def generate_store_metadata(self, store_name: str) -> Tuple[str, str]:
+    def generate_metadata(self, entity_type: str, entity: object, output_json: Optional[dict] = None) -> Tuple[str, str]:
         """
-        Generate a filename and alt text for a store based on the store name.
+        Generate file name and alt text metadata for a given entity type using settings and placeholders.
         """
-        image_filename = store_name.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
-        alt_text = f"favicon magazin online {store_name}"
+        file_name_template = SettingsService.get_setting_value(f"{entity_type}_image_file_name")
+        alt_text_template = SettingsService.get_setting_value(f"{entity_type}_image_alt_text")
 
-        return image_filename, alt_text
-
-    def generate_product_metadata(self, name: str, seo_keyword: str, full_name: str, index: int) -> Tuple[str, str]:
-        """
-        Generate a filename and alt text for a product based on the product name, SEO keyword, and full name.
-        """
-        image_filename = f"{name.lower().replace(' ', '-').replace(',', '')}-{seo_keyword.lower().replace(' ', '-').replace(',', '')}-{str(index).zfill(2)}.jpg"
-        alt_text = full_name
-
-        return image_filename, alt_text
-
-    def generate_featured_image_metadata(self, article_title: str, seo_keywords: list) -> Tuple[str, str]:
-        """
-        Generate a filename and alt text for the featured image of an article.
-        """
-        image_filename = article_title.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
-
-        if len(seo_keywords) >= 1:
-            alt_text = " ".join(seo_keywords)
+        if entity_type == "product":
+            replacements = self.placeholder_service.get_replacements_for_product(entity, output_json)
+        elif entity_type == "article":
+            replacements = self.placeholder_service.get_replacements_for_article(entity, output_json)
+        elif entity_type == "store":
+            replacements = self.placeholder_service.get_replacements_for_store(entity)
         else:
-            alt_text = article_title
+            raise ValueError(f"Unsupported entity type: {entity_type}")
 
-        return image_filename, alt_text
+        file_name = self.placeholder_service.replace_placeholders(file_name_template, replacements)
+        alt_text = self.placeholder_service.replace_placeholders(alt_text_template, replacements)
 
-    def generate_buyers_guide_image_metadata(self, article_title: str, seo_keywords: list) -> Tuple[str, str]:
-        """
-        Generate a filename and alt text for the buyers guide image of an article.
-        """
-
-        if(seo_keywords[0]):
-            image_filename = f"cum aleg {seo_keywords[0]} ghidul cumparatorului".replace(' ', '-').replace(',', '-').replace('.', '-')
-        else:
-            image_filename = article_title.lower().replace(' ', '-').replace(',', '-').replace('.', '-')
-
-        if len(seo_keywords) >= 2:
-            alt_text = f"ghidul cumparatorului pentru {seo_keywords[0]} cum alegi {seo_keywords[1]}"
-        else:
-            alt_text = article_title
-
-        return image_filename, alt_text
+        return file_name, alt_text
