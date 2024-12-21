@@ -12,7 +12,6 @@ from app.crud.crud_prompt import (
     update_prompt, 
     delete_prompt,
     get_prompt_types_subtypes,
-    get_placeholders_for_type,
     get_prompts_by_type_and_optional_subtype,
 )
 from app.database import get_db
@@ -125,13 +124,3 @@ async def get_types_subtypes(
     """
     types_subtypes = get_prompt_types_subtypes()
     return {"types": types_subtypes}
-
-@router.get("/placeholders/{type}", response_model=List[str])
-async def get_placeholders(
-    type: str,
-    current_user: User = Depends(get_current_user) 
-):
-    """
-    Get available placeholders for a given type (product or article).
-    """
-    return get_placeholders_for_type(type)

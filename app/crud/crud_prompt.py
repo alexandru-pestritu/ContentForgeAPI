@@ -105,22 +105,3 @@ def get_prompts_by_type_and_optional_subtype(
     
     prompts = query.all()
     return [PromptResponse.model_validate(prompt) for prompt in prompts]
-
-
-def get_placeholders_for_type(type: str) -> List[str]:
-    """
-    Return available placeholders for a given type (product or article).
-    """
-    placeholders = {
-        "Product": [
-            "{name}", "{full_name}", "{affiliate_urls}", "{description}",
-            "{specifications}", "{seo_keyword}", "{pros}", "{cons}", "{review}", "{rating}",
-            "{image_urls}", "{output}"
-        ],
-        "Article": [
-            "{title}", "{slug}", "{content}", "{seo_keywords}", "{meta_title}", "{meta_description}", 
-            "{main_image_url}", "{buyers_guide_image_url}", "{products_id_list}", 
-            "{introduction}", "{buyers_guide}", "{faqs}", "{conclusion}", "{output}"
-        ]
-    }
-    return placeholders.get(type, [])
