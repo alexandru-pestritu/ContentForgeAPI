@@ -38,25 +38,18 @@ async def create_article(
         new_article.categories = [Category(wp_id=category_id) for category_id in article.categories_id_list]
 
     if image_service:
-        if new_article.main_image_url:
-            main_image_id = await image_service.process_featured_image(
-                article_title=article.title,
-                seo_keywords=article.seo_keywords,
-                image_url=new_article.main_image_url,
-                target_width=1400,
-                target_height=960
+        if article.main_image_url:
+            new_article.main_image_wp_id = await image_service.process_image(
+                entity_type="article_main",
+                entity=new_article,
+                image_url=article.main_image_url
             )
-            new_article.main_image_wp_id = main_image_id
-
-        if new_article.buyers_guide_image_url:
-            buyers_guide_image_id = await image_service.process_buyers_guide_image(
-                article_title=article.title,
-                seo_keywords=article.seo_keywords,
-                image_url=new_article.buyers_guide_image_url,
-                target_width=1400,
-                target_height=960
+        if article.buyers_guide_image_url:
+            new_article.buyers_guide_image_wp_id = await image_service.process_image(
+                entity_type="article_guide",
+                entity=new_article,
+                image_url=article.buyers_guide_image_url
             )
-            new_article.buyers_guide_image_wp_id = buyers_guide_image_id
 
     db.add(new_article)
     db.commit()
@@ -161,25 +154,18 @@ async def update_article(
             setattr(article, key, value)
 
     if image_service:
-        if 'main_image_url' in update_data and update_data['main_image_url']:
-            main_image_id = await image_service.process_featured_image(
-                article_title=article.title,
-                seo_keywords=update_data.get('seo_keywords', []),
-                image_url=update_data['main_image_url'],
-                target_width=1400,
-                target_height=960
+        if 'main_image_url' in update_data:
+            article.main_image_wp_id = await image_service.process_image(
+                entity_type="article_main",
+                entity=article,
+                image_url=update_data['main_image_url']
             )
-            article.main_image_wp_id = main_image_id
-
-        if 'buyers_guide_image_url' in update_data and update_data['buyers_guide_image_url']:
-            buyers_guide_image_id = await image_service.process_buyers_guide_image(
-                article_title=article.title,
-                seo_keywords=update_data.get('seo_keywords', []),
-                image_url=update_data['buyers_guide_image_url'],
-                target_width=1400,
-                target_height=960
+        if 'buyers_guide_image_url' in update_data:
+            article.buyers_guide_image_wp_id = await image_service.process_image(
+                entity_type="article_guide",
+                entity=article,
+                image_url=update_data['buyers_guide_image_url']
             )
-            article.buyers_guide_image_wp_id = buyers_guide_image_id
 
     db.commit()
     db.refresh(article)

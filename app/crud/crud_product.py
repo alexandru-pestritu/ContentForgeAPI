@@ -48,14 +48,12 @@ async def create_product(
     new_product.images = [ProductImage(image_url=img_url) for img_url in image_urls]
 
     if image_service and new_product.images:
-        image_metadata_service = ImageMetadataService()
-        for index, img_obj in enumerate(new_product.images, start=1):
-            image_filename, alt_text = image_metadata_service.generate_product_metadata(
-                new_product.name, new_product.seo_keyword, new_product.full_name, index
+        for img_obj in new_product.images:
+            wp_id = await image_service.process_image(
+                entity_type="product",
+                entity=new_product,
+                image_url=img_obj.image_url
             )
-            image_path = await image_service.download_image(img_obj.image_url)
-            processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
-            wp_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
             img_obj.wp_id = wp_id
 
     db.add(new_product)
@@ -183,15 +181,13 @@ async def update_product(
                     db.delete(img_obj)
 
 
-        if image_service and product.images:
-            image_metadata_service = ImageMetadataService()
-            for index, img_obj in enumerate(product.images, start=1):
-                image_filename, alt_text = image_metadata_service.generate_product_metadata(
-                    product.name, product.seo_keyword, product.full_name, index
+        if image_service:
+            for img_obj in product.images:
+                wp_id = await image_service.process_image(
+                    entity_type="product",
+                    entity=product,
+                    image_url=img_obj.image_url
                 )
-                image_path = await image_service.download_image(img_obj.image_url)
-                processed_image_path = image_service.set_image_metadata(image_path, new_file_name=image_filename)
-                wp_id = await image_service.upload_image_to_wordpress(processed_image_path, image_filename, alt_text)
                 img_obj.wp_id = wp_id
 
         db.commit()

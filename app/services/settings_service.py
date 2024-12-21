@@ -57,27 +57,27 @@ class SettingsService:
             # Images - Store
             {"key": "store_image_width", "value": "16", "type": "integer", "description": "Store image width."},
             {"key": "store_image_height", "value": "16", "type": "integer", "description": "Store image height."},
-            {"key": "store_image_file_name", "value": "", "type": "string", "description": "File name pattern for store images."},
-            {"key": "store_image_alt_text", "value": "", "type": "string", "description": "Alt text pattern for store images"},
+            {"key": "store_image_file_name", "value": "{name}", "type": "string", "description": "File name pattern for store images."},
+            {"key": "store_image_alt_text", "value": "favicon magazin online {name}", "type": "string", "description": "Alt text pattern for store images"},
 
             # Images - Product
             {"key": "product_image_width", "value": "1080", "type": "integer", "description": "Product image width."},
             {"key": "product_image_height", "value": "1080", "type": "integer", "description": "Product image height."},
-            {"key": "product_image_file_name", "value": "", "type": "string", "description": "File name pattern for product images."},
-            {"key": "product_image_alt_text", "value": "", "type": "string", "description": "Alt text pattern for product images."},
+            {"key": "product_image_file_name", "value": "{name}", "type": "string", "description": "File name pattern for product images."},
+            {"key": "product_image_alt_text", "value": "{full_name}", "type": "string", "description": "Alt text pattern for product images."},
 
             # Images - Article
             # Main image
             {"key": "article_main_image_width", "value": "1400", "type": "integer", "description": "Article main image width"},
             {"key": "article_main_image_height", "value": "960", "type": "integer", "description": "Article main image height"},
-            {"key": "article_main_image_file_name", "": "main_image", "type": "string", "description": "File name pattern for main article images."},
-            {"key": "article_main_image_alt_text", "": "Main article image", "type": "string", "description": "Alt text pattern for main article images."},
+            {"key": "article_main_image_file_name", "{title}": "main_image", "type": "string", "description": "File name pattern for main article images."},
+            {"key": "article_main_image_alt_text", "{seo_keywords}": "Main article image", "type": "string", "description": "Alt text pattern for main article images."},
             
             # Buyer's Guide image
             {"key": "article_guide_image_width", "value": "1400", "type": "integer", "description": "Buyer's guide image width."},
             {"key": "article_guide_image_height", "value": "960", "type": "integer", "description": "Buyer's guide image height."},
-            {"key": "article_guide_image_file_name", "": "guide_image", "type": "string", "description": "File name pattern for buyer's guide images."},
-            {"key": "article_guide_image_alt_text", "": "Buyer's guide image", "type": "string", "description": "Alt text pattern for buyer's guide images."},
+            {"key": "article_guide_image_file_name", "cum aleg {seo_keywords}": "guide_image", "type": "string", "description": "File name pattern for buyer's guide images."},
+            {"key": "article_guide_image_alt_text", "ghidul cumparatorului pentru {seo_keywords}": "Buyer's guide image", "type": "string", "description": "Alt text pattern for buyer's guide images."},
         ]
 
         with SessionLocal() as db:

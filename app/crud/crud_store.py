@@ -23,7 +23,12 @@ async def create_store(
     store_data['favicon_url'] = f"https://www.google.com/s2/favicons?domain={domain}"
 
     if image_service:
-        store_data['favicon_image_id'] = await image_service.process_store_image(store_data['name'], store_data['favicon_url'])
+        store_obj = Store(name=store_data['name'], base_url=store_data['base_url'])
+        store_data['favicon_image_id'] = await image_service.process_image(
+            entity_type="store",
+            entity=store_obj,
+            image_url=store_data['favicon_url']
+        )
 
     new_store = Store(**store_data)
     db.add(new_store)
@@ -98,8 +103,12 @@ async def update_store(
             domain = urlparse(update_data['base_url']).netloc
             update_data['favicon_url'] = f"https://www.google.com/s2/favicons?domain={domain}"
 
-        if image_service:
-            update_data['favicon_image_id'] = await image_service.process_store_image(update_data['name'], update_data['favicon_url'])
+        if image_service and 'favicon_url' in update_data:
+            update_data['favicon_image_id'] = await image_service.process_image(
+                entity_type="store",
+                entity=store,
+                image_url=update_data['favicon_url']
+            )
 
         for key, value in update_data.items():
             setattr(store, key, value)
