@@ -41,11 +41,13 @@ class WordPressService:
         if not mime_type:
             mime_type = 'application/octet-stream'
 
-        # Read the image file
+        extension = mimetypes.guess_extension(mime_type) or ".jpg"
+        if not file_name.endswith(extension):
+            file_name += extension
+
         with open(image_path, 'rb') as f:
             image_data = f.read()
 
-        # Use aiohttp to handle the multipart/form-data request
         data = aiohttp.FormData()
         data.add_field(
             'file',
@@ -70,8 +72,8 @@ class WordPressService:
             except aiohttp.ClientError as e:
                 print(f"Error uploading image: {e}")
                 return None
-            
 
+            
     async def set_alt_text(self, image_id: int, alt_text: str):
         """
         Set the alt text for an image already uploaded to WordPress.
