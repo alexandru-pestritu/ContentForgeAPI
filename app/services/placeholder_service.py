@@ -7,7 +7,9 @@ class PlaceholderService:
         Replace placeholders in a template with actual values from replacements dict.
         """
         for placeholder, value in replacements.items():
-            template = template.replace(f"{placeholder}", value)
+            template = template.replace(f"{{{placeholder}}}", value)
+            
+        template = template.replace("{{", "{").replace("}}", "}")
         return template
 
     def get_replacements_for_product(self, product: object, output_json: Optional[dict] = None) -> Dict[str, str]:
