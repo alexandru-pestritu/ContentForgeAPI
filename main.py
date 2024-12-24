@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     Lifespan event handler for FastAPI that starts and stops the scheduler.
     """
 
-    check_inteval_days = SettingsService.get_setting_value("stock_check_log_interval")
+    check_inteval_days = SettingsService.get_setting_value("scraping.log.stock_check_interval")
     
     scheduler.add_job(
         scheduled_stock_update,

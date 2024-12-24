@@ -45,18 +45,18 @@ class BaseScraper(ABC):
         """
         Fetch the page content using Crawlbase with fallback for JavaScript API key.
         """
-        crawlbase_api_key = SettingsService.get_setting_value("crawlbase_api_key")
-        scrapingfish_api_key = SettingsService.get_setting_value("scrapingfish_api_key")
+        crawlbase_api_key = SettingsService.get_setting_value("scraping.api.crawlbase_api_key")
+        scrapingfish_api_key = SettingsService.get_setting_value("scraping.api.scrapingfish_api_key")
 
         if not crawlbase_api_key:
-            raise ValueError("CRAWLBASE_API_KEY is not set in the environment variables")
+            raise ValueError("CRAWLBASE_API_KEY is not set.")
 
         crawlbase_url = f"https://api.crawlbase.com/?token={crawlbase_api_key}&url={self.product_url}"
         response = requests.get(crawlbase_url)
 
         if response.status_code != 200:
             if not scrapingfish_api_key:
-                raise ValueError("SCRAPINGFISH_API_KEY is not set in the environment variables")
+                raise ValueError("SCRAPINGFISH_API_KEY is not set.")
             
             scrapingfish_url = f"https://scraping.narf.ai/api/v1/?api_key={scrapingfish_api_key}&url={self.product_url}"
             response = requests.get(scrapingfish_url)

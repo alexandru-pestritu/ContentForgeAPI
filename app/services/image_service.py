@@ -24,8 +24,8 @@ class ImageService:
         Process an image for a given entity type (e.g., store, product, article).
         """
         try:
-            width = SettingsService.get_setting_value(f"{entity_type}_image_width")
-            height = SettingsService.get_setting_value(f"{entity_type}_image_height")
+            width = SettingsService.get_setting_value(f"images.{entity_type}.width")
+            height = SettingsService.get_setting_value(f"images.{entity_type}.height")
 
             file_name, alt_text = self.metadata_service.generate_metadata(entity_type, entity, output_json)
 

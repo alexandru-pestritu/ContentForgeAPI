@@ -36,48 +36,47 @@ class SettingsService:
         """
         default_settings = [
             # Scraping
-            {"key": "crawlbase_api_key", "value": "your_crawlbase_api_key", "type": "string", "description": "API Key for Crawlbase scraping service."},
-            {"key": "scrapingfish_api_key", "value": "your_scrapingfish_api_key", "type": "string", "description": "API Key for Scrapingfish fallback scraping service."},
-            {"key": "stock_check_log_interval", "value": "14", "type": "integer", "description": "Interval in days for checking product stock availability."},
+            {"key": "scraping.api.crawlbase_api_key", "value": "your_crawlbase_api_key", "type": "string", "description": "API Key for Crawlbase scraping service."},
+            {"key": "scraping.api.scrapingfish_api_key", "value": "your_scrapingfish_api_key", "type": "string", "description": "API Key for Scrapingfish fallback scraping service."},
+            {"key": "scraping.log.stock_check_interval", "value": "14", "type": "integer", "description": "Interval in days for checking product stock availability."},
 
             # AI Generation
-            {"key": "edenai_api_key", "value": "your_edenai_api_key", "type": "string", "description": "API Key for EdenAI content generation service."},
-            {"key": "ai_default_provider", "value": "openai", "type": "string", "description": "Default AI provider for content generation."},
-            {"key": "ai_default_model", "value": "gpt-4o", "type": "string", "description": "Default AI model for content generation."},
-            {"key": "ai_temperature", "value": "0.1", "type": "float", "description": "Temperature for AI model."},
-            {"key": "ai_max_tokens", "value": "4096", "type": "integer", "description": "Maximum tokens for AI model."},
-            {"key": "ai_timeout", "value": "120", "type": "integer", "description": "Timeout for AI generation requests in seconds."},
+            {"key": "ai.api.edenai_api_key", "value": "your_edenai_api_key", "type": "string", "description": "API Key for EdenAI content generation service."},
+            {"key": "ai.provider.default", "value": "openai", "type": "string", "description": "Default AI provider for content generation."},
+            {"key": "ai.model.default", "value": "gpt-4o", "type": "string", "description": "Default AI model for content generation."},
+            {"key": "ai.parameters.temperature", "value": "0.1", "type": "float", "description": "Temperature for AI model."},
+            {"key": "ai.parameters.max_tokens", "value": "4096", "type": "integer", "description": "Maximum tokens for AI model."},
+            {"key": "ai.parameters.timeout", "value": "120", "type": "integer", "description": "Timeout for AI generation requests in seconds."},
 
             # Specifications Filtering
-            {"key": "max_specs", "value": "10", "type": "integer", "description": "Maximum number of specifications to display in WordPress widget."},
-            {"key": "specs_to_place_last", "value": "Functii,Continut pachet", "type": "string", "description": "Specifications to always place at the end of the list."},
-            {"key": "spec_relevance_percentage", "value": "0.5", "type": "float", "description": "Relevance threshold for specifications order."},
-            {"key": "spec_variability_percentage", "value": "0.5", "type": "float", "description": "Variability threshold for specifications order."},
+            {"key": "specifications.filtering.max_specs", "value": "10", "type": "integer", "description": "Maximum number of specifications to display in WordPress widget."},
+            {"key": "specifications.filtering.specs_to_place_last", "value": "Functii,Continut pachet", "type": "string", "description": "Specifications to always place at the end of the list."},
+            {"key": "specifications.filtering.relevance_threshold", "value": "0.5", "type": "float", "description": "Relevance threshold for specifications order."},
+            {"key": "specifications.filtering.variability_threshold", "value": "0.5", "type": "float", "description": "Variability threshold for specifications order."},
 
             # Images - Store
-            {"key": "store_image_width", "value": "16", "type": "integer", "description": "Store image width."},
-            {"key": "store_image_height", "value": "16", "type": "integer", "description": "Store image height."},
-            {"key": "store_image_file_name", "value": "{name}", "type": "string", "description": "File name pattern for store images."},
-            {"key": "store_image_alt_text", "value": "favicon magazin online {name}", "type": "string", "description": "Alt text pattern for store images"},
+            {"key": "images.store.width", "value": "16", "type": "integer", "description": "Store image width."},
+            {"key": "images.store.height", "value": "16", "type": "integer", "description": "Store image height."},
+            {"key": "images.store.file_name", "value": "{name}", "type": "string", "description": "File name pattern for store images."},
+            {"key": "images.store.alt_text", "value": "favicon magazin online {name}", "type": "string", "description": "Alt text pattern for store images."},
 
             # Images - Product
-            {"key": "product_image_width", "value": "1080", "type": "integer", "description": "Product image width."},
-            {"key": "product_image_height", "value": "1080", "type": "integer", "description": "Product image height."},
-            {"key": "product_image_file_name", "value": "{name}", "type": "string", "description": "File name pattern for product images."},
-            {"key": "product_image_alt_text", "value": "{full_name}", "type": "string", "description": "Alt text pattern for product images."},
+            {"key": "images.product.width", "value": "1080", "type": "integer", "description": "Product image width."},
+            {"key": "images.product.height", "value": "1080", "type": "integer", "description": "Product image height."},
+            {"key": "images.product.file_name", "value": "{name}", "type": "string", "description": "File name pattern for product images."},
+            {"key": "images.product.alt_text", "value": "{full_name}", "type": "string", "description": "Alt text pattern for product images."},
 
-            # Images - Article
-            # Main image
-            {"key": "article_main_image_width", "value": "1400", "type": "integer", "description": "Article main image width"},
-            {"key": "article_main_image_height", "value": "960", "type": "integer", "description": "Article main image height"},
-            {"key": "article_main_image_file_name", "value": "{title}", "type": "string", "description": "File name pattern for main article images."},
-            {"key": "article_main_image_alt_text", "value": "{seo_keywords}", "type": "string", "description": "Alt text pattern for main article images."},
-            
-            # Buyer's Guide image
-            {"key": "article_guide_image_width", "value": "1400", "type": "integer", "description": "Buyer's guide image width."},
-            {"key": "article_guide_image_height", "value": "960", "type": "integer", "description": "Buyer's guide image height."},
-            {"key": "article_guide_image_file_name", "value": "cum aleg {seo_keywords}", "type": "string", "description": "File name pattern for buyer's guide images."},
-            {"key": "article_guide_image_alt_text", "value": "ghidul cumparatorului pentru {seo_keywords}", "type": "string", "description": "Alt text pattern for buyer's guide images."},
+            # Images - Article Main
+            {"key": "images.article_main.width", "value": "1400", "type": "integer", "description": "Article main image width."},
+            {"key": "images.article_main.height", "value": "960", "type": "integer", "description": "Article main image height."},
+            {"key": "images.article_main.file_name", "value": "{title}", "type": "string", "description": "File name pattern for main article images."},
+            {"key": "images.article_main.alt_text", "value": "{seo_keywords}", "type": "string", "description": "Alt text pattern for main article images."},
+
+            # Images - Article Guide
+            {"key": "images.article_guide.width", "value": "1400", "type": "integer", "description": "Buyer's guide image width."},
+            {"key": "images.article_guide.height", "value": "960", "type": "integer", "description": "Buyer's guide image height."},
+            {"key": "images.article_guide.file_name", "value": "cum aleg {seo_keywords}", "type": "string", "description": "File name pattern for buyer's guide images."},
+            {"key": "images.article_guide.alt_text", "value": "ghidul cumparatorului pentru {seo_keywords}", "type": "string", "description": "Alt text pattern for buyer's guide images."},
         ]
 
         with SessionLocal() as db:

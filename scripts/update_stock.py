@@ -38,7 +38,7 @@ def update_product_stocks(db: Session, manual_run: bool = False):
     or all products if this is a manual run. Logs the duration of the stock check and the number of in-stock 
     and out-of-stock products.
     """
-    check_inteval_days = SettingsService.get_setting_value("stock_check_log_interval")
+    check_inteval_days = SettingsService.get_setting_value("scraping.log.stock_check_interval")
     start_time = time.time()
 
     now = datetime.now(timezone.utc)

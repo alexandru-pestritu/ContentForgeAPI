@@ -7,7 +7,7 @@ from app.services.settings_service import SettingsService
 
 class SpecificationsFilteringService:
     def __init__(self, max_specs: int = 10):
-        self.max_specs = SettingsService.get_setting_value("max_specs")
+        self.max_specs = SettingsService.get_setting_value("specifications.filtering.max_specs")
 
     def filter_specifications(self, products: List[ProductResponse]) -> List[ProductResponse]:
         """
@@ -71,7 +71,7 @@ class SpecificationsFilteringService:
         spec_frequency, spec_variability = self.analyze_specifications(products)
         spec_relevance = self.calculate_relevance(spec_frequency, spec_variability, total_products)
   
-        specs_to_place_last = SettingsService.get_setting_value("specs_to_place_last").split(",")
+        specs_to_place_last = SettingsService.get_setting_value("specifications.filtering.specs_to_place_last").split(",")
         spec_order = self.get_ordered_spec_list(spec_relevance, specs_to_place_last)
         final_specs_list = self.select_top_specs(products, spec_order, max_specs)
         return final_specs_list
@@ -108,8 +108,8 @@ class SpecificationsFilteringService:
         Returns:
             spec_relevance: A dictionary with specifications as keys and relevance scores as values.
         """
-        frequency_percentage = SettingsService.get_setting_value("spec_relevance_percentage")
-        variability_percentage = SettingsService.get_setting_value("spec_variability_percentage")
+        frequency_percentage = SettingsService.get_setting_value("specifications.filtering.relevance_threshold")
+        variability_percentage = SettingsService.get_setting_value("specifications.filtering.variability_threshold")
         spec_relevance = {}
         for spec in spec_frequency:
             frequency_score = spec_frequency[spec] / total_products 

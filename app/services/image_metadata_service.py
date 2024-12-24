@@ -21,8 +21,8 @@ class ImageMetadataService:
         """
         Generate file name and alt text metadata for a given entity type using settings and placeholders.
         """
-        file_name_template = SettingsService.get_setting_value(f"{entity_type}_image_file_name")
-        alt_text_template = SettingsService.get_setting_value(f"{entity_type}_image_alt_text")
+        file_name_template = SettingsService.get_setting_value(f"images.{entity_type}.file_name")
+        alt_text_template = SettingsService.get_setting_value(f"images.{entity_type}.alt_text")
 
         if entity_type == "product":
             replacements = self.placeholder_service.get_replacements_for_product(entity, output_json)

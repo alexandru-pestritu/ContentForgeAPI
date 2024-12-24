@@ -14,7 +14,7 @@ class EdenAIService:
         Initializes the EdenAIService with the base URL and API key from environment variables.
         """
         self.base_url = "https://api.edenai.run/v2"
-        self.api_key = SettingsService.get_setting_value("edenai_api_key")
+        self.api_key = SettingsService.get_setting_value("ai.api.edenai_api_key")
         if not self.api_key:
             raise ValueError("EdenAI API key is not set")
 
@@ -85,9 +85,9 @@ class EdenAIService:
         :return: A dictionary with provider names as keys and a dictionary of generated text and cost as values.
         """
         url = f"{self.base_url}/text/chat"
-        temperature = SettingsService.get_setting_value("ai_temperature")
-        max_tokens = SettingsService.get_setting_value("ai_max_tokens")
-        request_timeout = SettingsService.get_setting_value("ai_timeout")
+        temperature = SettingsService.get_setting_value("ai.parameters.temperature")
+        max_tokens = SettingsService.get_setting_value("ai.parameters.max_tokens")
+        request_timeout = SettingsService.get_setting_value("ai.parameters.timeout")
         headers = {
             'Authorization': f'Bearer {self.api_key}',
             'Content-Type': 'application/json'
