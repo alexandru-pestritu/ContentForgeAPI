@@ -18,6 +18,7 @@ class PromptUpdate(BaseModel):
 
 class PromptResponse(PromptBase):
     id: int
+    blog_id: int
 
     class Config:
         from_attributes = True

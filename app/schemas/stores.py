@@ -16,6 +16,7 @@ class StoreUpdate(BaseModel):
 
 class StoreResponse(StoreBase):
     id: int
+    blog_id: int
     favicon_image_id: Optional[int] = None
     favicon_url: Optional[HttpUrl] = None
 

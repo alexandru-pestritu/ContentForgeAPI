@@ -1,5 +1,5 @@
 import io
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
@@ -23,16 +23,18 @@ router = APIRouter()
 @router.post("/", response_model=PromptResponse)
 async def create_new_prompt(
     prompt: PromptCreate, 
+    blog_id: int = Path(..., description="The ID of the blog"),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
     """
     Create a new prompt.
     """
-    return create_prompt(db=db, prompt=prompt)
+    return create_prompt(db=db, blog_id=blog_id, prompt=prompt)
 
 @router.get("/", response_model=Dict[str, Any])
 async def read_prompts(
+    blog_id: int = Path(..., description="The ID of the blog"),
     skip: int = 0, 
     limit: int = 10, 
     sort_field: Optional[str] = None,
@@ -44,12 +46,13 @@ async def read_prompts(
     """
     Retrieve a list of prompts with pagination, sorting, filtering, and total records.
     """
-    result = get_prompts(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
+    result = get_prompts(db=db, blog_id=blog_id, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     return result
 
 @router.get("/{prompt_type}", response_model=List[PromptResponse])
 async def read_prompts_by_type_and_optional_subtype(
-    prompt_type: str, 
+    blog_id: int = Path(..., description="The ID of the blog"),
+    prompt_type: str = Path(..., description="The type of prompts to retrieve"),
     prompt_subtype: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -64,7 +67,8 @@ async def read_prompts_by_type_and_optional_subtype(
     :return: List of prompts.
     """
     prompts = get_prompts_by_type_and_optional_subtype(
-        db=db, 
+        db=db,
+        blog_id=blog_id, 
         prompt_type=prompt_type, 
         prompt_subtype=prompt_subtype
     )
@@ -74,43 +78,46 @@ async def read_prompts_by_type_and_optional_subtype(
 
 @router.get("/{prompt_id}", response_model=PromptResponse)
 async def read_prompt(
-    prompt_id: int, 
+    blog_id: int = Path(..., description="The ID of the blog"),
+    prompt_id: int = Path(..., description="The ID of the prompt"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Retrieve a prompt by ID.
     """
-    prompt = get_prompt_by_id(db=db, prompt_id=prompt_id)
+    prompt = get_prompt_by_id(db=db, blog_id=blog_id, prompt_id=prompt_id)
     if not prompt:
         raise HTTPException(status_code=404, detail="Prompt not found")
     return prompt
 
 @router.put("/{prompt_id}", response_model=PromptResponse)
 async def update_existing_prompt(
-    prompt_id: int, 
     prompt: PromptUpdate, 
+    blog_id: int = Path(..., description="The ID of the blog"),
+    prompt_id: int = Path(..., description="The ID of the prompt"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Update an existing prompt.
     """
-    updated_prompt = update_prompt(db=db, prompt_id=prompt_id, prompt_update=prompt)
+    updated_prompt = update_prompt(db=db, blog_id=blog_id, prompt_id=prompt_id, prompt_update=prompt)
     if not updated_prompt:
         raise HTTPException(status_code=404, detail="Prompt not found")
     return updated_prompt
 
 @router.delete("/{prompt_id}", response_model=PromptResponse)
 async def delete_existing_prompt(
-    prompt_id: int, 
+    blog_id: int = Path(..., description="The ID of the blog"),
+    prompt_id: int = Path(..., description="The ID of the prompt"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Delete a prompt by ID.
     """
-    deleted_prompt = delete_prompt(db=db, prompt_id=prompt_id)
+    deleted_prompt = delete_prompt(db=db, blog_id=blog_id, prompt_id=prompt_id)
     if not deleted_prompt:
         raise HTTPException(status_code=404, detail="Prompt not found")
     return deleted_prompt

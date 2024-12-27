@@ -39,6 +39,7 @@ class ProductResponse(ProductBase):
     def from_orm(cls, product: Product):
         return cls(
             id=product.id,
+            blog_id=product.blog_id,
             name=product.name,
             store_ids=[store.id for store in product.stores],
             affiliate_urls=[HttpUrl(aff.url) for aff in product.affiliate_urls],

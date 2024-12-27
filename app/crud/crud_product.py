@@ -16,6 +16,7 @@ from app.services.image_service import ImageService
 
 async def create_product(
     db: Session, 
+    blog_id: int,
     product: ProductCreate, 
     image_service: Optional[ImageService] = None
     ) -> ProductResponse:
@@ -28,6 +29,7 @@ async def create_product(
     stores = db.query(Store).filter(Store.id.in_(product.store_ids)).all()
 
     new_product = Product(
+        blog_id=blog_id,
         name=product.name,
         seo_keyword=product.seo_keyword,
         rating=product.rating,
@@ -63,18 +65,20 @@ async def create_product(
 
 def get_product_by_id(
     db: Session, 
+    blog_id: int,
     product_id: int
     ) -> Optional[ProductResponse]:
     """
     Retrieve a product by its ID.
     """
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).filter(Product.id == product_id, Product.blog_id == blog_id).first()
     if product:
         return ProductResponse.from_orm(product)
     return None
 
 def get_products(
     db: Session, 
+    blog_id: int,
     skip: int = 0, 
     limit: int = 10, 
     sort_field: Optional[str] = None,
@@ -84,7 +88,7 @@ def get_products(
     """
     Retrieve a list of products, with pagination support, sorting, filtering, and total records.
     """
-    query = db.query(Product)
+    query = db.query(Product).filter(Product.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -108,11 +112,11 @@ def get_products(
     }
 
 
-def get_out_of_stock_products_with_articles(db: Session) -> List[Dict[str, Any]]:
+def get_out_of_stock_products_with_articles(db: Session, blog_id: int) -> List[Dict[str, Any]]:
     """
     Retrieve products that are out of stock and the articles they are part of.
     """
-    out_of_stock_products = db.query(Product).filter(Product.in_stock == False).all()
+    out_of_stock_products = db.query(Product).filter(Product.blog_id == blog_id, Product.in_stock == False).all()
     result = []
 
     for product in out_of_stock_products:
@@ -127,6 +131,7 @@ def get_out_of_stock_products_with_articles(db: Session) -> List[Dict[str, Any]]
 
 async def update_product(
     db: Session, 
+    blog_id: int,
     product_id: int, 
     product_update: ProductUpdate, 
     image_service: Optional[ImageService] = None
@@ -134,7 +139,7 @@ async def update_product(
     """
     Update an existing product record.
     """
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).filter(Product.id == product_id, Product.blog_id == blog_id).first()
     if not product:
         return None
 
@@ -197,12 +202,13 @@ async def update_product(
 
 def delete_product(
     db: Session, 
+    blog_id: int,
     product_id: int
     ) -> Optional[ProductResponse]:
     """
     Delete a product by its ID.
     """
-    product = db.query(Product).filter(Product.id == product_id).first()
+    product = db.query(Product).filter(Product.id == product_id, Product.blog_id == blog_id).first()
     if product:
         db.delete(product)
         db.commit()

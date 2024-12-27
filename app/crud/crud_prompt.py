@@ -8,28 +8,31 @@ from app.schemas.prompt import PromptCreate, PromptUpdate, PromptResponse
 from typing import Dict, List, Optional
 from app.services.markdown_service import MarkdownService
 
-def create_prompt(db: Session, prompt: PromptCreate) -> PromptResponse:
-    new_prompt = Prompt(**prompt.model_dump())
+def create_prompt(db: Session, blog_id: int, prompt: PromptCreate) -> PromptResponse:
+    prompt_data = prompt.model_dump()
+    prompt_data["blog_id"] = blog_id
+    new_prompt = Prompt(**prompt_data)
     db.add(new_prompt)
     db.commit()
     db.refresh(new_prompt)
     return PromptResponse.model_validate(new_prompt)
 
-def get_prompt_by_id(db: Session, prompt_id: int) -> Optional[PromptResponse]:
-    prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
+def get_prompt_by_id(db: Session, blog_id: int, prompt_id: int) -> Optional[PromptResponse]:
+    prompt = db.query(Prompt).filter(Prompt.id == prompt_id, Prompt.blog_id == blog_id).first()
     if prompt:
         return PromptResponse.model_validate(prompt)
     return None
 
 def get_prompts(
     db: Session, 
+    blog_id: int,
     skip: int = 0, 
     limit: int = 10, 
     sort_field: Optional[str] = None,
     sort_order: Optional[int] = None,
     filter: Optional[str] = None
 ) -> dict:
-    query = db.query(Prompt)
+    query = db.query(Prompt).filter(Prompt.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -54,8 +57,8 @@ def get_prompts(
         "total_records": total_records
     }
 
-def update_prompt(db: Session, prompt_id: int, prompt_update: PromptUpdate) -> Optional[PromptResponse]:
-    prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
+def update_prompt(db: Session, blog_id: int, prompt_id: int, prompt_update: PromptUpdate) -> Optional[PromptResponse]:
+    prompt = db.query(Prompt).filter(Prompt.id == prompt_id, Prompt.blog_id == blog_id).first()
     if prompt:
         update_data = prompt_update.model_dump(exclude_unset=True)
         for key, value in update_data.items():
@@ -65,8 +68,8 @@ def update_prompt(db: Session, prompt_id: int, prompt_update: PromptUpdate) -> O
         return PromptResponse.model_validate(prompt)
     return None
 
-def delete_prompt(db: Session, prompt_id: int) -> Optional[PromptResponse]:
-    prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
+def delete_prompt(db: Session, blog_id: int, prompt_id: int) -> Optional[PromptResponse]:
+    prompt = db.query(Prompt).filter(Prompt.id == prompt_id, Prompt.blog_id == blog_id).first()
     if prompt:
         db.delete(prompt)
         db.commit()
@@ -84,6 +87,7 @@ def get_prompt_types_subtypes() -> Dict[str, List[str]]:
 
 def get_prompts_by_type_and_optional_subtype(
     db: Session, 
+    blog_id: int,
     prompt_type: Optional[str] = None, 
     prompt_subtype: Optional[str] = None
 ) -> List[PromptResponse]:
@@ -95,7 +99,7 @@ def get_prompts_by_type_and_optional_subtype(
     :param prompt_subtype: The optional subtype of prompts to retrieve.
     :return: List of prompts with the specified type and optional subtype.
     """
-    query = db.query(Prompt)
+    query = db.query(Prompt).filter(Prompt.blog_id == blog_id)
     
     if prompt_type:
         query = query.filter(Prompt.type == prompt_type)

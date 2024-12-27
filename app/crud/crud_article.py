@@ -10,6 +10,7 @@ from app.services.image_service import ImageService
 
 async def create_article(
     db: Session, 
+    blog_id: int,
     article: ArticleCreate, 
     image_service: Optional[ImageService] = None
     ) -> ArticleResponse:
@@ -17,6 +18,7 @@ async def create_article(
     Create a new article record in the database.
     """
     new_article = Article(
+        blog_id=blog_id,
         title=article.title,
         slug=article.slug,
         author_id=article.author_id,
@@ -57,19 +59,21 @@ async def create_article(
     return ArticleResponse.from_orm(new_article)
 
 def get_article_by_id(
-    db: Session, 
+    db: Session,
+    blog_id: int,
     article_id: int
     ) -> Optional[ArticleResponse]:
     """
     Retrieve an article by its ID.
     """
-    article = db.query(Article).filter(Article.id == article_id).first()
+    article = db.query(Article).filter(Article.id == article_id, Article.blog_id == blog_id).first()
     if article:
         return ArticleResponse.from_orm(article)
     return None
 
 def get_articles(
     db: Session, 
+    blog_id: int,
     skip: int = 0, 
     limit: int = 10, 
     sort_field: Optional[str] = None,
@@ -79,7 +83,7 @@ def get_articles(
     """
     Retrieve a list of articles, with pagination support, sorting, filtering, and total records.
     """
-    query = db.query(Article)
+    query = db.query(Article).filter(Article.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -104,16 +108,17 @@ def get_articles(
     }
 
 
-def get_latest_articles(db: Session, limit: int) -> List[ArticleResponse]:
+def get_latest_articles(db: Session, blog_id: int, limit: int) -> List[ArticleResponse]:
     """
     Retrieve the latest articles based on the highest IDs (as IDs are assigned incrementally).
     """
-    articles = db.query(Article).order_by(Article.id.desc()).limit(limit).all()
+    articles = db.query(Article).filter(Article.blog_id == blog_id).order_by(Article.id.desc()).limit(limit).all()
     return [ArticleResponse.from_orm(article) for article in articles]
 
 
 async def update_article(
     db: Session, 
+    blog_id: int,
     article_id: int, 
     article_update: ArticleUpdate, 
     image_service: Optional[ImageService] = None
@@ -121,7 +126,7 @@ async def update_article(
     """
     Update an existing article record.
     """
-    article = db.query(Article).filter(Article.id == article_id).first()
+    article = db.query(Article).filter(Article.id == article_id, Article.blog_id ==  blog_id).first()
     if not article:
         return None
 
@@ -171,11 +176,11 @@ async def update_article(
     db.refresh(article)
     return ArticleResponse.from_orm(article)
 
-def delete_article(db: Session, article_id: int) -> Optional[ArticleResponse]:
+def delete_article(db: Session, blog_id: int, article_id: int) -> Optional[ArticleResponse]:
     """
     Delete an article by its ID.
     """
-    article = db.query(Article).filter(Article.id == article_id).first()
+    article = db.query(Article).filter(Article.id == article_id, Article.blog_id == blog_id).first()
     if article:
         db.delete(article)
         db.commit()
