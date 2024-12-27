@@ -14,6 +14,7 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
+    blog_id = Column(Integer, ForeignKey("blogs.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, index=True, nullable=True)
     full_name = Column(String, nullable=True)
     in_stock = Column(Boolean, nullable=True)

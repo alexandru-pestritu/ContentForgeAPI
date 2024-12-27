@@ -13,6 +13,7 @@ class Article(Base):
     __tablename__ = "articles"
 
     id = Column(Integer, primary_key=True, index=True)
+    blog_id = Column(Integer, ForeignKey("blogs.id", ondelete="CASCADE"), nullable=False)
     wp_id = Column(Integer, nullable=True)
     title = Column(String, nullable=False)
     slug = Column(String, nullable=False)
