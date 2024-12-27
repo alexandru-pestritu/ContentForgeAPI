@@ -26,8 +26,8 @@ def apply_filters_sorting_pagination(query: Query, model, skip: int, limit: int,
     query = query.offset(skip).limit(limit)
     return query
 
-def export_stores(db: Session, skip: int, limit: int, sort_field: Optional[str], sort_order: Optional[int], filter: Optional[str]) -> str:
-    query = db.query(Store)
+def export_stores(db: Session, blog_id: int, skip: int, limit: int, sort_field: Optional[str], sort_order: Optional[int], filter: Optional[str]) -> str:
+    query = db.query(Store).filter(Store.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -48,13 +48,14 @@ def export_stores(db: Session, skip: int, limit: int, sort_field: Optional[str],
 
 def export_products(
     db: Session,
+    blog_id: int,
     skip: int = 0,
     limit: int = 10,
     sort_field: Optional[str] = None,
     sort_order: Optional[int] = None,
     filter: Optional[str] = None
 ) -> str:
-    query = db.query(Product)
+    query = db.query(Product).filter(Product.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -106,13 +107,14 @@ def export_products(
 
 def export_articles(
     db: Session,
+    blog_id: int,
     skip: int = 0,
     limit: int = 10,
     sort_field: Optional[str] = None,
     sort_order: Optional[int] = None,
     filter: Optional[str] = None
 ) -> str:
-    query = db.query(Article)
+    query = db.query(Article).filter(Article.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"
@@ -165,13 +167,14 @@ def export_articles(
 
 def export_prompts(
     db: Session,
+    blog_id: int,
     skip: int,
     limit: int,
     sort_field: Optional[str],
     sort_order: Optional[int],
     filter: Optional[str]
 ) -> str:
-    query = db.query(Prompt)
+    query = db.query(Prompt).filter(Prompt.blog_id == blog_id)
 
     if filter:
         filter_pattern = f"%{filter}%"

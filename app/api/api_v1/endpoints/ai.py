@@ -1,5 +1,5 @@
 from typing import Any, Dict
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 from app.crud.crud_ai import get_providers_by_feature_and_subfeature, generate_product_text, generate_article_text
 from app.database import get_db
@@ -31,6 +31,7 @@ async def generate_product_ai_text(
     prompt_id: int, 
     provider: str, 
     model: str, 
+    blog_id: int = Path(..., title="Blog ID", description="The ID of the blog."),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
@@ -46,7 +47,7 @@ async def generate_product_ai_text(
     :return: The updated product and the cost of the AI operation.
     """
     try:
-        result = await generate_product_text(db=db, product_id=product_id, prompt_id=prompt_id, provider=provider, model=model)
+        result = await generate_product_text(db=db, blog_id=blog_id, product_id=product_id, prompt_id=prompt_id, provider=provider, model=model)
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -58,6 +59,7 @@ async def generate_article_ai_text(
     prompt_id: int, 
     provider: str, 
     model: str, 
+    blog_id: int = Path(..., title="Blog ID", description="The ID of the blog."),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
@@ -73,7 +75,7 @@ async def generate_article_ai_text(
     :return: The updated article and the cost of the AI operation.
     """
     try:
-        result = await generate_article_text(db=db, article_id=article_id, prompt_id=prompt_id, provider=provider, model=model)
+        result = await generate_article_text(db=db, blog_id=blog_id, article_id=article_id, prompt_id=prompt_id, provider=provider, model=model)
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from fastapi.responses import StreamingResponse
 from typing import Optional
@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.get("/", response_class=StreamingResponse)
 async def export_entities(
+    blog_id: int = Path(..., title="The ID of the blog to export entities from"),
     entity_type: str = Query(...),
     skip: int = 0,
     limit: int = 10,
@@ -28,7 +29,7 @@ async def export_entities(
     if not exporter:
         raise HTTPException(status_code=400, detail=f"Unknown entity type: {entity_type}")
 
-    csv_data = exporter(db=db, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
+    csv_data = exporter(db=db, blog_id=blog_id, skip=skip, limit=limit, sort_field=sort_field, sort_order=sort_order, filter=filter)
     
     filename = f"{entity_type}_export.csv"
 

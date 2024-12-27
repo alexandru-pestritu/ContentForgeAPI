@@ -1,3 +1,4 @@
+from fastapi import Path
 from sqlalchemy.orm import Session
 from app.models.product import Product
 from app.models.article import Article
@@ -28,6 +29,7 @@ async def get_providers_by_feature_and_subfeature(feature_name: str, subfeature_
 
 async def generate_product_text(
     db: Session, 
+    blog_id: int,
     product_id: int, 
     prompt_id: int, 
     provider: str, 
@@ -44,7 +46,7 @@ async def generate_product_text(
     :return: A dictionary containing the updated product and the cost of the operation.
     """
     try:
-        product = db.query(Product).filter(Product.id == product_id).first()
+        product = db.query(Product).filter(Product.id == product_id, Product.blog_id == blog_id).first()
         if not product:
             raise ValueError(f"Product with ID {product_id} not found.")
 
@@ -76,6 +78,7 @@ async def generate_product_text(
 
 async def generate_article_text(
     db: Session, 
+    blog_id: int,
     article_id: int, 
     prompt_id: int, 
     provider: str, 
@@ -92,7 +95,7 @@ async def generate_article_text(
     :return: A dictionary containing the updated article and the cost of the operation.
     """
     try:
-        article = db.query(Article).filter(Article.id == article_id).first()
+        article = db.query(Article).filter(Article.id == article_id, Article.blog_id == blog_id).first()
         if not article:
             raise ValueError(f"Article with ID {article_id} not found.")
 

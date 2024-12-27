@@ -10,10 +10,9 @@ from app.crud.crud_product import get_product_by_id
 from app.crud.crud_article import get_article_by_id
 from typing import Dict, Any, Optional
 
-wp_service = WordPressService()
 specifications_filter_service = SpecificationsFilteringService()
 
-async def generate_product_widget(db: Session, product_id: int) -> Dict[str, Any]:
+async def generate_product_widget(db: Session, blog_id: int, product_id: int) -> Dict[str, Any]:
     """
     Generate the product widget using ProductTemplate for a given product ID.
 
@@ -22,7 +21,8 @@ async def generate_product_widget(db: Session, product_id: int) -> Dict[str, Any
     :return: A dictionary containing the product template content.
     """
     try:
-        product_response = get_product_by_id(db, product_id)
+        wp_service = WordPressService(blog_id=blog_id, db=db)
+        product_response = get_product_by_id(db, blog_id=blog_id, product_id=product_id)
         if not product_response:
             raise ValueError(f"Product with ID {product_id} not found.")
 
@@ -40,6 +40,7 @@ async def generate_product_widget(db: Session, product_id: int) -> Dict[str, Any
 
 async def generate_article_widget(
     db: Session, 
+    blog_id: int,
     article_id: int, 
     publish_to_wp: bool = False
 ) -> Dict[str, Any]:
@@ -52,14 +53,15 @@ async def generate_article_widget(
     :return: A dictionary containing the article template content and WP ID if applicable.
     """
     try:
-        article_response = get_article_by_id(db, article_id)
+        wp_service = WordPressService(blog_id=blog_id, db=db)
+        article_response = get_article_by_id(db, blog_id=blog_id, article_id=article_id)
         if not article_response:
             raise ValueError(f"Article with ID {article_id} not found.")
 
         article_template = ArticleTemplate(article_response, db, wp_service, specifications_filter_service)
         generated_content = await article_template.render()
 
-        article = db.query(Article).filter(Article.id == article_id).first()
+        article = db.query(Article).filter(Article.id == article_id, Article.blog_id == blog_id).first()
         article.content = generated_content
         db.commit()
         article_response.content = generated_content

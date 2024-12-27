@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[StockCheckLogResponse])
 async def read_stock_check_logs(
+    blog_id: int = Path(..., title="The ID of the blog to retrieve stock check logs for."),
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     db: Session = Depends(get_db),
@@ -20,7 +21,7 @@ async def read_stock_check_logs(
     """
     Retrieve all stock check logs with optional date filtering.
     """
-    logs = get_stock_check_logs(db=db, start_date=start_date, end_date=end_date)
+    logs = get_stock_check_logs(db=db, blog_id=blog_id, start_date=start_date, end_date=end_date)
     if not logs:
         raise HTTPException(status_code=404, detail="No stock check logs found")
     return logs
