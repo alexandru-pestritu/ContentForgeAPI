@@ -8,8 +8,9 @@ from app.services.wordpress_service import WordPressService
 from app.services.image_service import ImageService
 
 class StoreImporter(BaseImporter):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, blog_id: int):
         self.db = db
+        self.blog_id = blog_id
 
     async def process_entry(self, data: Dict) -> Tuple[ImportStatus, Optional[str]]:
         if "name" not in data:
@@ -28,13 +29,13 @@ class StoreImporter(BaseImporter):
 
         upload_wp_str = data.get("upload_to_wordpress", "").strip().lower()
         if upload_wp_str == "true":
-            wordpress_service = WordPressService()
+            wordpress_service = WordPressService(blog_id=self.blog_id, db=self.db)
             image_service = ImageService(wordpress_service)
         else:
             image_service = None
 
         try:
-            await create_store(self.db, store_create, image_service=image_service)
+            await create_store(db=self.db, blog_id=self.blog_id, store=store_create, image_service=image_service)
             return (ImportStatus.SUCCESS, None)
         except Exception as e:
             return (ImportStatus.FAILED, str(e))

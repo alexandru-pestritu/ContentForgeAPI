@@ -21,8 +21,9 @@ IMPORTERS = {
 
 
 class ImporterService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, blog_id: int):
         self.db = db
+        self.blog_id = blog_id
 
     def create_task(self, entity_type: str, csv_file_content: str):
         task_id = str(uuid4())
@@ -45,7 +46,7 @@ class ImporterService:
         if not importer_cls:
             return
 
-        importer = importer_cls(self.db)
+        importer = importer_cls(self.db, self.blog_id)
 
         for i, entry in enumerate(task.entries):
             if entry.status == ImportStatus.PENDING:

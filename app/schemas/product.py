@@ -25,6 +25,7 @@ class ProductUpdate(ProductBase):
 
 class ProductResponse(ProductBase):
     id: int
+    blog_id: int
     in_stock: Optional[bool] = None
     full_name: Optional[str] = None
     description: Optional[str] = None

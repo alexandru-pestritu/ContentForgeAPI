@@ -30,6 +30,7 @@ class ArticleUpdate(ArticleBase):
 
 class ArticleResponse(ArticleBase):
     id: int
+    blog_id: int
     wp_id: Optional[int]
     main_image_wp_id: Optional[int]
     buyers_guide_image_wp_id: Optional[int]
@@ -43,6 +44,7 @@ class ArticleResponse(ArticleBase):
     def from_orm(cls, article: Article):
         return cls(
             id=article.id,
+            blog_id=article.blog_id,
             wp_id=article.wp_id,
             categories_id_list=[category.wp_id for category in article.categories],
             title=article.title,

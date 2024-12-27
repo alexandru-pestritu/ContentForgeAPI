@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, BackgroundTasks, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, UploadFile, BackgroundTasks, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
@@ -13,6 +13,7 @@ router = APIRouter()
 async def import_entities(
     file: UploadFile,
     background_tasks: BackgroundTasks,
+    blog_id: int = Path(..., title="The ID of the blog to import entities to"),
     entity_type: str = Query(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -20,7 +21,7 @@ async def import_entities(
     """
     Import entities of the given type from a CSV file.
     """
-    importer = ImporterService(db)
+    importer = ImporterService(db, blog_id)
     content = (await file.read()).decode("utf-8")
     task_id, entries_data = importer.create_task(entity_type, content)
     background_tasks.add_task(importer.process_task, task_id)
@@ -30,6 +31,7 @@ async def import_entities(
 async def retry_import_task(
     task_id: str,
     background_tasks: BackgroundTasks,
+    blog_id: int = Path(..., title="The ID of the blog to import entities to"),
     entity_type: str = Query(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -37,6 +39,6 @@ async def retry_import_task(
     """
     Retry the failed entries for a given import task and entity type.
     """
-    importer = ImporterService(db)
+    importer = ImporterService(db, blog_id)
     background_tasks.add_task(importer.retry_failed_entries, task_id)
     return importer.get_task_response(task_id)

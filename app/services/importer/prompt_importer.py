@@ -6,8 +6,9 @@ from app.crud.crud_prompt import create_prompt
 from sqlalchemy.orm import Session
 
 class PromptImporter(BaseImporter):
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, blog_id: int):
         self.db = db
+        self.blog_id = blog_id
 
     async def process_entry(self, data: Dict) -> Tuple[ImportStatus, Optional[str]]:
         if "name" not in data or not data["name"].strip():
@@ -30,7 +31,7 @@ class PromptImporter(BaseImporter):
         )
 
         try:
-            new_prompt = create_prompt(self.db, prompt_create)
+            new_prompt = create_prompt(db=self.db, blog_id=self.blog_id, prompt=prompt_create)
             return (ImportStatus.SUCCESS, None)
         except Exception as e:
             return (ImportStatus.FAILED, str(e))
