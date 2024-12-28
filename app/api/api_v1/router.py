@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from app.api.api_v1.endpoints import blog, stores, login, product, article, token, wordpress, prompt, ai, widgets, dashboard, stock_check_log, websocket, importer, exporter, settings, placeholder
+from app.api.api_v1.endpoints import setup, blog, stores, login, product, article, token, wordpress, prompt, ai, widgets, dashboard, stock_check_log, websocket, importer, exporter, settings, placeholder
 
 api_router = APIRouter()
 
+api_router.include_router(setup.router, prefix="/setup", tags=["setup"])
 api_router.include_router(blog.router, prefix="/blogs", tags=["blogs"])
 api_router.include_router(stores.router, prefix="/{blog_id}/stores", tags=["stores"])
 api_router.include_router(product.router, prefix="/{blog_id}/products", tags=["products"])
