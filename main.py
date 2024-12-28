@@ -4,6 +4,7 @@ import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
+from app.core.setup_middleware import setup_middleware
 from app.models.user import User
 from app.services.settings_service import SettingsService
 from scripts.update_stock import scheduled_stock_update
@@ -36,6 +37,8 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+
+app.middleware("http")(setup_middleware)
 
 origins = os.getenv(
     "CORS_ORIGINS", "http://localhost:4200,http://localhost:8000"
