@@ -63,7 +63,7 @@ def setup_step2_api_keys(
     crud_settings.update_setting(
         db, 
         key="ai.api.edenai_api_key", 
-        setting_update=SettingUpdate
+        setting_update=SettingUpdate(value=edenai_api_key)
     )
 
     update_step(db, 3)

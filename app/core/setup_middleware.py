@@ -5,7 +5,8 @@ from app.database import SessionLocal
 from app.crud.crud_setup import is_setup_completed
 
 async def setup_middleware(request: Request, call_next):
-    if request.url.path.startswith("/setup"):
+    path = request.url.path
+    if path.startswith("/setup") or path.startswith("/api/v1/setup"):
         return await call_next(request)
 
     db: Session = SessionLocal()
