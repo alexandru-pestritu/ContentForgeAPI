@@ -28,12 +28,10 @@ class WordPressService:
         blog = db.query(Blog).filter(Blog.id == blog_id).first()
         if not blog:
             raise HTTPException(status_code=404, detail=f"Blog with id={blog_id} not found.")
-        
         base_url = blog.base_url.rstrip("/")
         if not base_url.endswith("wp-json/wp/v2"):
             base_url = f"{base_url}/wp-json/wp/v2"
-
-        self.base_url = blog.base_url.rstrip("/")
+        self.base_url = base_url
         self.username = blog.username
         self.api_key = blog.api_key
         self.token = self._generate_token()
