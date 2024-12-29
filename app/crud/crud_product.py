@@ -149,56 +149,55 @@ async def update_product(
         if attr in update_data and update_data[attr] is not None:
             setattr(product, attr, update_data[attr])
 
-        if 'store_ids' in update_data and update_data['store_ids'] is not None:
+    if 'store_ids' in update_data and update_data['store_ids'] is not None:
             stores = db.query(Store).filter(Store.id.in_(update_data['store_ids'])).all()
             product.stores = stores
 
-        if 'affiliate_urls' in update_data and update_data['affiliate_urls'] is not None:
+    if 'affiliate_urls' in update_data and update_data['affiliate_urls'] is not None:
             product.affiliate_urls.clear()
             product.affiliate_urls = [ProductAffiliateURL(url=str(url)) for url in update_data['affiliate_urls']]
 
-        if 'specifications' in update_data and update_data['specifications'] is not None:
+    if 'specifications' in update_data and update_data['specifications'] is not None:
             product.specifications.clear()
             product.specifications = [
                 ProductSpecification(spec_key=k, spec_value=v) for k, v in update_data['specifications'].items()]
              
-        if 'pros' in update_data and update_data['pros'] is not None:
+    if 'pros' in update_data and update_data['pros'] is not None:
             product.pros.clear()
             product.pros = [ProductPro(text=pro) for pro in update_data['pros']]
 
-        if 'cons' in update_data and update_data['cons'] is not None:
+    if 'cons' in update_data and update_data['cons'] is not None:
             product.cons.clear()
             product.cons = [ProductCon(text=con) for con in update_data['cons']]
 
-        if 'image_urls' in update_data and update_data['image_urls'] is not None:
-            new_image_urls = set(
+    if 'image_urls' in update_data and update_data['image_urls'] is not None:
+        new_image_urls = set(
                 str(url) if str(url).startswith(('http://', 'https://')) else f"http://{str(url)}"
                 for url in update_data['image_urls']
             )
-            existing_images = {img.image_url: img for img in product.images}
+        existing_images = {img.image_url: img for img in product.images}
             
-            for url in new_image_urls:
-                if url not in existing_images:
-                    product.images.append(ProductImage(image_url=url))
+        for url in new_image_urls:
+            if url not in existing_images:
+                product.images.append(ProductImage(image_url=url))
 
-            for existing_url, img_obj in list(existing_images.items()):
-                if existing_url not in new_image_urls:
-                    db.delete(img_obj)
+        for existing_url, img_obj in list(existing_images.items()):
+            if existing_url not in new_image_urls:
+                db.delete(img_obj)
 
 
-        if image_service:
-            for img_obj in product.images:
-                wp_id = await image_service.process_image(
+    if image_service:
+        for img_obj in product.images:
+            wp_id = await image_service.process_image(
                     entity_type="product",
                     entity=product,
                     image_url=img_obj.image_url
                 )
-                img_obj.wp_id = wp_id
+            img_obj.wp_id = wp_id
 
-        db.commit()
-        db.refresh(product)
-        return ProductResponse.from_orm(product)
-    return None
+    db.commit()
+    db.refresh(product)
+    return ProductResponse.from_orm(product)
 
 def delete_product(
     db: Session, 
