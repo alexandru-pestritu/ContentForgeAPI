@@ -20,7 +20,7 @@ class ProductTemplate:
 
     def _get_store(self):
         store_id = self.product.store_ids[0]
-        store = get_store_by_id(self.db, store_id)
+        store = get_store_by_id(self.db, store_id, self.wp_service.blog_id)
         return store
 
     async def _get_image(self, image_id: int):

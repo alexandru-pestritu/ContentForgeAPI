@@ -33,7 +33,7 @@ class ArticleTemplate:
 
         products = []
         for product_id in self.article.products_id_list:
-            product = get_product_by_id(self.db, product_id) 
+            product = get_product_by_id(self.db, self.wp_service.blog_id, product_id) 
             if product:
                 image_data = None
                 if product.image_ids:

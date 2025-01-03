@@ -31,6 +31,7 @@ class WordPressService:
         base_url = blog.base_url.rstrip("/")
         if not base_url.endswith("wp-json/wp/v2"):
             base_url = f"{base_url}/wp-json/wp/v2"
+        self.blog_id = blog_id
         self.base_url = base_url
         self.username = blog.username
         self.api_key = blog.api_key
