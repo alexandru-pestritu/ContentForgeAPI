@@ -1,254 +1,198 @@
 # ContentForge API
 
-ContentForge is an API built with **FastAPI** for automating the creation of blog articles on a WordPress site. This application is designed to support **affiliate marketing** by generating high-quality content efficiently. The UI for ContentForge is built with Angular and is available [here](https://github.com/alexandru-pestritu/ContentForgeUI).
+ContentForge is an API built with **FastAPI** for automating the creation and management of blog articles on WordPress sites. This application is designed to support **affiliate marketing** by streamlining the process of managing affiliate stores, products, and AI-generated content. The UI for ContentForge is built with Angular and is available [here](https://github.com/alexandru-pestritu/ContentForgeUI).
 
 ## ✨ Features
 
-- **Affiliate Store Management** 🏪  
-  Users can add and manage affiliate stores in the database effortlessly. Each store is defined with relevant details, including the store name, base URL, and optional favicon, enabling seamless integration and organization of products linked to specific stores.
+### **Multi-Blog Support** 📝
+Manage multiple blogs independently, with separate configurations for stores, products, articles, and prompts for each blog. This allows users to publish relevant content directly to the corresponding WordPress blogs.
 
-- **Automated Product Data Scraping** 🛒  
-  Users can add products by providing the product's affiliate URL. The API utilizes **BeautifulSoup4** and **Crawlbase** to scrape detailed product information, including descriptions, specifications, images, and other relevant data. This automation ensures that the most current and accurate information is available for use in articles, eliminating manual entry.
+### **Affiliate Store Management** 🏪
+Users can add and manage affiliate stores within the app. Stores are defined with relevant details such as store name, base URL, and optional favicon, making it easier to organize products by their source.
 
-- **Article Creation with Product Integration** ✍️  
-  Users can create articles while specifying the associated products. The articles can incorporate scraped product data, enhancing the content's value and relevance to readers. This feature allows users to build comprehensive articles that naturally incorporate product recommendations.
+### **Automated Product Data Scraping** 🛒
+Add products by providing the product's affiliate URL. The API uses **BeautifulSoup4** and **Crawlbase** to scrape essential product information, such as descriptions, specifications, and images, ensuring accuracy and efficiency.
 
-- **AI Content Generation for Products and Articles** 🤖  
-  ContentForge integrates with **EdenAI**, a unified API for accessing multiple AI models, allowing users to generate high-quality AI content. Users can create product reviews, highlight pros and cons, and generate various sections of articles, including introductions, buyer's guides, FAQs, and conclusions. This flexibility enables tailored content that resonates with target audiences.
+### **Article Creation with Product Integration** ✍️
+Create articles with dynamically integrated product data to build comprehensive, engaging blog content that includes recommendations, reviews, and product details.
 
-- **Custom Prompt Creation** 🔍  
-  Users can create and manage custom prompts with placeholders for products and articles. These placeholders dynamically insert values from product or article models, allowing for highly customizable content generation. This feature empowers users to refine the tone and style of the AI-generated content to align with their brand voice.
+### **AI Content Generation** 🤖
+Integrate with **EdenAI** to generate:
+- Product reviews, pros, and cons.
+- Article sections, including introductions, buyer's guides, FAQs, and conclusions.
+- Custom prompts for tailored AI-generated content.
 
-- **Gutenberg Blocks Layout for WordPress** 📝  
-  Once an article is finalized, users can publish it directly to their WordPress site. The API generates a Gutenberg blocks layout based on the article's content and associated products, ensuring the article is well-structured and visually appealing when published. This integration simplifies the publishing process, allowing users to focus on content creation rather than technical details.
+### **Import and Export CSV** 📂
+Import and export stores, products, articles, and prompts via CSV files. Import tasks run with websocket-based feedback, updating the frontend with the status of each item.
 
-- **Stock Monitoring and Check Logs** 📉  
-  The API tracks product availability and logs stock checks, providing users with insights into stock levels and historical data. Users can view detailed logs that include check times, in-stock counts, and out-of-stock counts, enabling better inventory management and timely updates to articles based on product availability.
+### **Database Normalization and PostgreSQL Migration** 🗄️
+The database has been normalized and migrated to PostgreSQL for enhanced performance, scalability, and better data organization.
 
-- **SEO Optimization Features** 🚀  
-  Articles can be enhanced with SEO features such as keywords, meta titles, and meta descriptions. Users can input these details while creating articles, improving the chances of their content ranking higher in search engine results and attracting more organic traffic.
+### **Settings Management** ⚙️
+A comprehensive settings page to manage:
+- API keys for scraping and AI content generation.
+- Image resolution, file names, and alt text templates.
+- AI provider and model selection.
+- Maximum token length, temperature, and other content generation parameters.
 
-- **Secure Authentication & User Management** 🔒  
-  ContentForge ensures secure access to its API through JWT token-based authentication. Users must authenticate to access specific operations, safeguarding sensitive data and allowing for effective user management within the application.
+### **Setup Wizard** 🚀
+A guided setup process for first-time users to:
+- Create an admin account.
+- Configure API keys for web scraping and AI services.
+- Add the first blog for immediate use.
 
+### **Gutenberg Block Layout for WordPress** 📝
+Publish articles directly to WordPress in a visually appealing Gutenberg block format.
+
+### **Stock Monitoring and Logging** 📉
+Track product availability and view detailed stock check logs, including timestamps and product statuses.
+
+### **SEO Optimization** 🚀
+Input SEO metadata such as keywords, meta titles, and meta descriptions while creating articles to improve organic search performance.
+
+### **Secure Authentication & User Management** 🔒
+Access to the API is secured through JWT token-based authentication, ensuring that only authorized users can manage blogs and content.
 
 ## 🚀 Installation
 
-To set up the project, follow these steps:
+### Prerequisites
+- Python 3.8+
+- PostgreSQL
 
-1. Clone the repository:
-   
+### Steps:
+
+1. **Clone the repository:**
    ```bash
    git clone https://github.com/alexandru-pestritu/ContentForgeAPI.git
-   cd contentforgeapi
+   cd ContentForgeAPI
    ```
-3. Create a virtual environment and activate it:
-   
+
+2. **Create and activate a virtual environment:**
    ```bash
    python -m venv venv
-   venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
-5. Install the required dependencies:
-   
+
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
-7. Set up your environment variables by copying the ```.env-template.txt``` to .env and modifying it as needed.
-   
-9. Run the database migrations:
-    
+
+4. **Set environment variables:**
+   Copy `.env-template.txt` to `.env` and update it with the necessary configuration.
+
+5. **Run database migrations:**
    ```bash
    alembic upgrade head
    ```
 
 ## 🏃 Running the Application
-You can start the application using the following command:
 
+Start the API server with:
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
+Access the API at `http://localhost:8000`.
 
-Access the API at ```http://localhost:8000```.
+## 📊 API Endpoints
 
+### **Setup**
+- **Check Setup Status:** `GET /api/v1/setup/status`
+- **Step 1 (User Creation):** `POST /api/v1/setup/step1`
+- **Step 2 (API Keys Configuration):** `POST /api/v1/setup/step2`
+- **Step 3 (First Blog Configuration):** `POST /api/v1/setup/step3`
+- **Finalize Setup:** `POST /api/v1/setup/complete`
 
-## 📡 API Endpoints
+### **Blogs**
+- **Create Blog:** `POST /api/v1/blogs/`
+- **Read Blogs:** `GET /api/v1/blogs/`
+- **Read Blog by ID:** `GET /api/v1/blogs/{blog_id}`
+- **Update Blog:** `PUT /api/v1/blogs/{blog_id}`
+- **Delete Blog:** `DELETE /api/v1/blogs/{blog_id}`
 
-### Stores
-- **Create Store**  
-  `POST /api/v1/stores/`  
-  Create a new store in the database.
+### **Stores**
+- **Create Store:** `POST /api/v1/{blog_id}/stores/`
+- **Read Stores:** `GET /api/v1/{blog_id}/stores/`
+- **Read Store by ID:** `GET /api/v1/{blog_id}/stores/{store_id}`
+- **Update Store:** `PUT /api/v1/{blog_id}/stores/{store_id}`
+- **Delete Store:** `DELETE /api/v1/{blog_id}/stores/{store_id}`
 
-- **Read Stores**  
-  `GET /api/v1/stores/`  
-  Retrieve a list of all stores.
+### **Products**
+- **Create Product:** `POST /api/v1/{blog_id}/products/`
+- **Read Products:** `GET /api/v1/{blog_id}/products/`
+- **Read Out-of-Stock Products:** `GET /api/v1/{blog_id}/products/out-of-stock`
+- **Read Product by ID:** `GET /api/v1/{blog_id}/products/{product_id}`
+- **Update Product:** `PUT /api/v1/{blog_id}/products/{product_id}`
+- **Delete Product:** `DELETE /api/v1/{blog_id}/products/{product_id}`
 
-- **Read Store**  
-  `GET /api/v1/stores/{store_id}`  
-  Retrieve details of a specific store by ID.
+### **Articles**
+- **Create Article:** `POST /api/v1/{blog_id}/articles/`
+- **Read Articles:** `GET /api/v1/{blog_id}/articles/`
+- **Read Latest Articles:** `GET /api/v1/{blog_id}/articles/latest`
+- **Read Article by ID:** `GET /api/v1/{blog_id}/articles/{article_id}`
+- **Update Article:** `PUT /api/v1/{blog_id}/articles/{article_id}`
+- **Delete Article:** `DELETE /api/v1/{blog_id}/articles/{article_id}`
 
-- **Update Store**  
-  `PUT /api/v1/stores/{store_id}`  
-  Update an existing store's details.
+### **Prompts**
+- **Create Prompt:** `POST /api/v1/{blog_id}/prompts/`
+- **Read Prompts:** `GET /api/v1/{blog_id}/prompts/`
+- **Read Prompt by Type:** `GET /api/v1/{blog_id}/prompts/{prompt_type}`
+- **Read Prompt by ID:** `GET /api/v1/{blog_id}/prompts/{prompt_id}`
+- **Update Prompt:** `PUT /api/v1/{blog_id}/prompts/{prompt_id}`
+- **Delete Prompt:** `DELETE /api/v1/{blog_id}/prompts/{prompt_id}`
+- **Get Available Prompt Types and Subtypes:** `GET /api/v1/{blog_id}/prompts/types-subtypes/`
 
-- **Delete Store**  
-  `DELETE /api/v1/stores/{store_id}`  
-  Remove a store from the database.
+### **WordPress Integration**
+- **Get WordPress Users:** `GET /api/v1/{blog_id}/wordpress/users`
+- **Get WordPress Categories:** `GET /api/v1/{blog_id}/wordpress/categories`
 
-### Products
-- **Create Product**  
-  `POST /api/v1/products/`  
-  Add a new product, retrieving details through data scraping.
+### **AI Content Generation**
+- **Get AI Providers:** `GET /api/v1/{blog_id}/ai/providers`
+- **Generate Product AI Text:** `POST /api/v1/{blog_id}/ai/generate-product-text`
+- **Generate Article AI Text:** `POST /api/v1/{blog_id}/ai/generate-article-text`
 
-- **Read Products**  
-  `GET /api/v1/products/`  
-  Get a list of all products.
+### **Import/Export**
+- **Import CSV:** `POST /api/v1/{blog_id}/import/`
+- **Retry Failed Imports:** `POST /api/v1/{blog_id}/import/{task_id}/retry`
+- **Export CSV:** `GET /api/v1/{blog_id}/export/`
 
-- **Read Out of Stock Products**  
-  `GET /api/v1/products/out-of-stock`  
-  Retrieve a list of products that are out of stock.
+### **Settings**
+- **Read Settings:** `GET /api/v1/settings/`
+- **Create Setting:** `POST /api/v1/settings/`
+- **Read Setting by Key:** `GET /api/v1/settings/{key}`
+- **Update Setting:** `PUT /api/v1/settings/{key}`
+- **Delete Setting:** `DELETE /api/v1/settings/{key}`
 
-- **Read Product**  
-  `GET /api/v1/products/{product_id}`  
-  Get details of a specific product by ID.
+### **Stock Check Logs**
+- **Read Stock Check Logs:** `GET /api/v1/{blog_id}/stock-check-logs/`
 
-- **Update Product**  
-  `PUT /api/v1/products/{product_id}`  
-  Update details of an existing product.
-
-- **Delete Product**  
-  `DELETE /api/v1/products/{product_id}`  
-  Remove a product from the database.
-
-### Articles
-- **Create Article**  
-  `POST /api/v1/articles/`  
-  Add a new article, linking associated products.
-
-- **Read Articles**  
-  `GET /api/v1/articles/`  
-  Retrieve a list of all articles.
-
-- **Read Latest Articles**  
-  `GET /api/v1/articles/latest`  
-  Get the most recent articles.
-
-- **Read Article**  
-  `GET /api/v1/articles/{article_id}`  
-  Retrieve details of a specific article by ID.
-
-- **Update Article**  
-  `PUT /api/v1/articles/{article_id}`  
-  Update an existing article.
-
-- **Delete Article**  
-  `DELETE /api/v1/articles/{article_id}`  
-  Remove an article from the database.
-
-### Prompts
-- **Create Prompt**  
-  `POST /api/v1/prompts/`  
-  Add a new AI prompt for content generation.
-
-- **Read Prompts**  
-  `GET /api/v1/prompts/`  
-  Retrieve a list of all prompts.
-
-- **Read Prompts by Type**  
-  `GET /api/v1/prompts/{prompt_type}`  
-  Get prompts filtered by type and optional subtype.
-
-- **Read Prompt**  
-  `GET /api/v1/prompts/{prompt_id}`  
-  Retrieve details of a specific prompt by ID.
-
-- **Update Prompt**  
-  `PUT /api/v1/prompts/{prompt_id}`  
-  Update an existing prompt.
-
-- **Delete Prompt**  
-  `DELETE /api/v1/prompts/{prompt_id}`  
-  Remove a prompt from the database.
-
-- **Get Types and Subtypes**  
-  `GET /api/v1/prompts/types-subtypes/`  
-  Retrieve available prompt types and subtypes.
-
-- **Get Placeholders**  
-  `GET /api/v1/prompts/placeholders/{type}`  
-  Get placeholders for a specific prompt type.
-
-### WordPress Integration
-- **Get WordPress Users**  
-  `GET /api/v1/wordpress/users`  
-  Retrieve a list of users from WordPress.
-
-- **Get WordPress Categories**  
-  `GET /api/v1/wordpress/categories`  
-  Retrieve a list of categories from WordPress.
-
-### AI Content Generation
-- **Get AI Providers**  
-  `GET /api/v1/ai/providers`  
-  List available AI content generation providers.
-
-- **Generate Product AI Text**  
-  `POST /api/v1/ai/generate-product-text`  
-  Generate AI text for product reviews and details.
-
-- **Generate Article AI Text**  
-  `POST /api/v1/ai/generate-article-text`  
-  Generate AI content for articles (introduction, FAQs, etc.).
-
-### Widgets
-- **Generate Product Content**  
-  `POST /api/v1/widgets/generate/product`  
-  Generate content for products based on predefined templates.
-
-- **Generate Article Content**  
-  `POST /api/v1/widgets/generate/article`  
-  Generate content for articles using custom templates.
-
-### Dashboard
-- **Read Dashboard Stats**  
-  `GET /api/v1/dashboard/stats`  
-  Retrieve statistics related to articles, products, and overall performance.
-
-### Stock Check Logs
-- **Read Stock Check Logs**  
-  `GET /api/v1/stock-check-logs/`  
-  Retrieve logs of stock checks and product availability over time.
-
-### Authentication
-- **Login for Access Token**  
-  `POST /api/v1/login`  
-  Authenticate users and obtain an access token.
-
-- **Refresh Access Token**  
-  `POST /api/v1/token/refresh`  
-  Refresh the user's access token for continued access.
+### **Authentication**
+- **Login:** `POST /api/v1/login`
+- **Refresh Access Token:** `POST /api/v1/token/refresh`
 
 ## 🌐 Deployment
 
-### Docker
+### **Docker**
+This project includes a Dockerfile for containerized deployment.
 
-This project includes a Dockerfile, allowing you to easily build and run the application in a containerized environment. The Dockerfile sets up the application with all necessary dependencies and environment variables.
-
-#### Building the Docker Image
-
-To deploy the application using Docker, follow these steps:
-
-1. **Build the Docker Image**  
-   Navigate to the root directory of the project and run the following command to build the Docker image:
-
+1. **Build Docker Image:**
    ```bash
    docker build -t contentforgeapi .
    ```
 
-2. **Run the Docker Container**
-   After building the image, you can run a container using the following command:
-
+2. **Run Docker Container:**
    ```bash
    docker run -d -p 8000:8000 --env-file .env contentforgeapi
    ```
-  Make sure to create a ```.env``` file in the root directory of your project with environment variables from ```.env-template.txt``` file before running the Docker container.
-  Replace 8000 with the desired port if necessary. This command will start the FastAPI application, exposing it on the specified port.
+
+Ensure the `.env` file contains your environment variables.
+
+## 🖼️ Database Diagram
+![ContentForge_database_diagram](https://github.com/user-attachments/assets/e0646d11-9a72-4282-81d0-2d04e330b6b9)
+
+
+## 🛠️ Contributing
+Contributions are welcome! Fork the repository, make your changes, and submit a pull request.
+
+## 📄 License
+ContentForge is licensed under the MIT License.
