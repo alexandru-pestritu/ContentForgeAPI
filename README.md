@@ -187,6 +187,9 @@ This project includes a Dockerfile for containerized deployment.
 
 Ensure the `.env` file contains your environment variables.
 
+## 🖼️ Arhitectural Diagram
+![ContentForge Arhitectural Diagram](https://github.com/user-attachments/assets/1aae9421-40d5-4146-8fe0-42a0f4bfb053)
+
 ## 🖼️ Database Diagram
 ![ContentForge_database_diagram](https://github.com/user-attachments/assets/e0646d11-9a72-4282-81d0-2d04e330b6b9)
 
